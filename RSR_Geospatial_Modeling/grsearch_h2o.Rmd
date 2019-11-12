@@ -38,7 +38,7 @@ grass.rsr.grsearch<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\g
 shrub.rsr.grsearch<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_rsr_sample_for_grsearch_20191024.csv')
 
 ```
-see the column names of the sample
+#### see the column names of the sample
 
 ```{R}
 names(forest.rsr.grsearch)
@@ -62,7 +62,9 @@ mean(shrub.rsr.grsearch$ratio)
 ```
 
 
-deselect the covariates that we do not want
+#### deselect the covariates that we do not want
+
+Below three chunks, choose one according to the vegetation type you work on. DO NOT RUN THEM ALL AT THE SAME TIME!
 
 ```{R}
 #bandnames<-names(forest.rsr.grsearch)
@@ -85,7 +87,8 @@ print(bandnames)
 
 ```
 
-load the data
+#### load the data
+Same as before, run one of the three each time :-)
 
 ```{R}
 rawmatrix<-forest.rsr.grsearch
@@ -108,28 +111,30 @@ rawmatrix<-rawmatrix[!(is.na(rawmatrix$latitude)),]
 ```
 
 
-set the name of the dependent variable
+#### set the name of the dependent variable
 
 ```{R}
 vartomodel<-'ratio'
 ```
-select the bands from the regression matrix
+#### select the bands from the regression matrix
 ```{R}
 regressionmatrix<-rawmatrix %>%
   select(bandnames, vartomodel)
 ```
+
+#### Initiate the H2o cluster
 ```{R}
 localH2O<-h2o.init(nthreads = 7, max_mem_size = '500g', ignore_config = TRUE)
 
 ```
 
 
-import the regression matrix
+#### import the regression matrix
 ```{R}
 regmatrixh2o<-as.h2o(regressionmatrix, destination_frame = 'regMatrixH2O')
 ```
 
-simple rf model, no grsearch
+#### simple rf model, no grsearch
 
 ```{R}
 rf.model.rsr<-h2o.randomForest(
@@ -149,13 +154,13 @@ h2o.varimp_plot(rf.model.rsr)
 
 h2o.r2(rf.model.rsr, xval = TRUE)
 ```
-let's try to save the model
+#### let's try to save the model. This will save time next time
 
 ```{R}
 h2o.saveModel(object = rf.model.rsr, path = 'C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\best_grass_models',force = TRUE)
 
 ```
-load the saved model
+#### load the saved model
 
 
 ```{R}
@@ -166,7 +171,7 @@ saved_model<-h2o.loadModel("C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\rf_
 WOW~!
 
 
-set grsearch parameters
+####  set grsearch parameters
 
 ```{R}
 rf.params<-list(ntrees = c(50,100,150),
@@ -176,7 +181,7 @@ rf.params<-list(ntrees = c(50,100,150),
 
 ```
 
-set grsearch criteria
+#### set grsearch criteria
 
 ```{R}
 search.criteria<-list(strategy = 'RandomDiscrete', max_models = 150, seed = 0, max_runtime_secs = 3600)
@@ -184,7 +189,7 @@ search.criteria<-list(strategy = 'RandomDiscrete', max_models = 150, seed = 0, m
 
 ```
 
-perform rf grsearch across parameters
+#### perform rf grsearch across parameters
 
 ```{R}
 rf.grid<-h2o.grid('randomForest',
@@ -198,11 +203,11 @@ rf.grid<-h2o.grid('randomForest',
                   search_criteria = search.criteria)
 ```
 
-retrieve grid searched model performance sort by RMSE/R2
+#### retrieve grid searched model performance sort by R2
 
 
 ```{R}
-#整理内存
+
 gc(reset = TRUE)
 ```
 
@@ -214,7 +219,7 @@ rf.grid.perf<-h2o.getGrid(grid_id = 'rf.grid',
 
 ```
 
-
+#### show the best models
 
 ```{R}
 
@@ -227,9 +232,17 @@ print(rf.grid.perf@summary_table)
 
 ```
 
+#### save the hyperparameters
+run one of the three each time.
+
 ```{R}
 write.csv(rf.grid.perf@summary_table,'C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_rfgrsearch_r2_20191022.csv')
 ```
+
+```{R}
+write.csv(rf.grid.perf@summary_table,'C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_rfgrsearch_r2_20191022.csv')
+```
+
 ```{R}
 write.csv(rf.grid.perf@summary_table,'C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_rfgrsearch_r2_20191025.csv')
 
@@ -237,47 +250,8 @@ write.csv(rf.grid.perf@summary_table,'C:\\Users\\haozh\\Desktop\\root_ratio\\grs
 
 
 
-export the datatable
-```{R}
-write.csv(bands, 'C:\\Users\\haozh\\Desktop\\root_ratio\\sampled_dataset_for_mapping\\forest_sample.csv')
-library(rgdal)
-bandsformapping<-bands
-bandsformapping$long<-bandsformapping$longitude
-bandsformapping$lat<-bandsformapping$latitude
 
-coordinates(bandsformapping)<-~long+lat
-proj4string(bandsformapping)<-CRS('+init=epsg:4326')
-writeOGR(bandsformapping, 'C:\\Users\\haozh\\Desktop\\root_ratio\\sampled_dataset_for_mapping','forest_sample','ESRI Shapefile')
-
-```
-
-grab the best models,
-
-```{R}
-bestrf<-h2o.getModel(rf.grid.perf@model_ids[[10]])
-
-```
-r2 of best performing RF
-
-```{R}
-h2o.r2(bestrf, xval = TRUE)
-
-```
-variable importance metrics
-
-```{R}
-h2o.varimp_plot(bestrf)
-
-```
-
-
-```{R}
-bestrf
-
-```
-
-
-doing plots
+#### doing plots
 
 
 ```{R}
@@ -289,7 +263,7 @@ trainandpredicted$train<-regressionmatrix[[vartomodel]]
 
 ```
 
-define palette
+#### define palette
 
 ```{R}
 paletteForUse <- c('#d10000', '#ff6622', '#ffda21', '#33dd00', '#1133cc', '#220066', '#330044')
@@ -301,6 +275,8 @@ trainandpredicted$colors = colors[trainandpredicted$dens]
 summary(lm(predict ~ train, data = trainandpredicted))
 
 ```
+
+#### Plot the predicted vs. ovserved values
 
 ```{R}
 ggplot(trainandpredicted, 
@@ -323,49 +299,6 @@ ggplot(trainandpredicted,
 
 ```
 
-save the model
-
-```{R}
-
-h2o.saveModel(object = bestrf, path = 'C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\best_shrub_models',force = TRUE)
-```
 
 
-
-##try allmachinelearning models
-
-```{R}
-automodel<-h2o.automl(y = vartomodel, 
-                      training_frame = regmatrixh2o,
-                      seed = 0,
-                      nfolds = 10,
-                      project_name = 'forest_rsr_sample_automl')
-
-```
-
-print the models
-
-```{R}
-automodel@leaderboard
-```
-
-
-```{R}
-h2o.exportFile(automodel@leaderboard, 'C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\autoleaderboard.csv')
-
-```
-
-
-
-
-
-```{R}
-h2o.r2(automodel@leader, xval = TRUE)
-
-```
-
-```{R}
-
-
-```
 
