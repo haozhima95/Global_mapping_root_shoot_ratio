@@ -6,7 +6,7 @@
 
 - The folder titled "RSR_Geospatial_Modeling" contains for:
   - Aggregating the raw records by unique coordinate information (script titled RSR_aggregated_by_coordinates_by_biome.ipynb).
-  - Cleaning the aggregated data in each biome and vegetation type, filtering the outliers (scrip titled xxx).
+  - Cleaning the aggregated data in each biome and vegetation type, filtering the outliers (scrip titled raw_data_clean_after_aggregation.Rmd).
   - Grid searching and model selection for further global mapping (script titled xxx).
   - Creating the maps for RSR distribution and model uncertainties (script titled xxx).
   - Exploring the full model predictions for three vegetation types (script titled xxx)
