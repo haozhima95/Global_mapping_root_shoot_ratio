@@ -11,3 +11,6 @@
   - Creating the maps for RSR distribution and model uncertainties (script titled xxx).
   - Exploring the full model predictions for three vegetation types (script titled xxx)
   - Exploring the maps of belowground biomass density distribution and belowground biomass calculations (scripts titled xxx).
+
+- The folder titled "RSR_Observations" contains data for most of the calculations
+  - all raw data
