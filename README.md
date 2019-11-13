@@ -11,6 +11,6 @@
   - Creating the maps for RSR distribution and model uncertainties (script titled rsr_covariates_attach.js, forest_rf_grsearch.js, grass_rf_grsearch.js, shrub_rf_grsearch.js, rsr_mean_vc.js and rsr_total_coverage_interpolation.js).
   - Exploring the full model predictions for three vegetation types (scripts titled rsr_gee_model_prediction.js, modelprediction.Rmd and modelprediction.html).
   - Exploring the maps of belowground biomass density distribution and belowground biomass calculations (scripts titled belowmass_density_convert.js, forest_belowmass_calculation.js, grass_belowmass_calculation.js and shrub_belowmass_calculation.js).
-
+  - Exploring the correlation coefficients of chosen environmental covariates against RSRs in different vegetation types (scripts titled clustering_covariates.Rmd and clustering_covariates.html).
 - The folder titled "RSR_data" contains data for most of the calculations
   - all raw data
