@@ -1,5 +1,5 @@
 
-## Forest root shoot ratio raw records
+## Grassland root shoot ratio raw records
 
 Here we separate the whold records into 5 different biome level reigons. There is no data sacrifice during this process.
 
