@@ -19,4 +19,6 @@
   - "belowmass_density_convert.js" to covert aboveground biomass of each vegetation type using differnt RSR models that have been created by previous scripts.
   - "forest_belowmass_calculation.js", "grass_belowmass_calculation.js" and "shrub_belowmass_calculation.js" to calculate total belowground biomass of different vegetation types.
 6. To evaluate random forest model predictions, you can use the script:
-- "modelprediction.Rmd" and refer "modelprediction.html".
+  - "modelprediction.Rmd" and refer "modelprediction.html".
+7. To assess the envrionmental covariates'influence on spatial variation of RSRs at a global scale, you can use the script:
+  - "clustering_covariates.Rmd" and also "clustering_covariates.html" to choose environmental covariates using clustering algorithms. Using these variables, you can use OLS and SAR models to assess their importance to variations of RSRs. Furthermore, you can explore these effects by creating a barplot to display.
