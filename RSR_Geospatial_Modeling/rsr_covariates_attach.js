@@ -7,8 +7,8 @@
 comp = comp.addBands(soil_moisture);
     comp = comp.addBands(water_depth);
 
-
-   for(var i = 0; i<65; i++){
+// Here we need to check the coverage of sampled points
+   for(var i = 0; i<comp.size(); i++){
 
      var im = comp.select(i);
     
@@ -22,11 +22,12 @@ comp = comp.addBands(soil_moisture);
    }
    
 var bandlist = [0,1,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82]
+//  These bands are selected because they cover most of the sampled data points.  
     comp = comp.select(bandlist);
     print(comp.bandNames());
-   print(forest.size());
-   var im = comp.select(0);
-   var sampled = im.sampleRegions({
+    print(forest.size());
+    var im = comp.select(0);
+    var sampled = im.sampleRegions({
      collection:forest,
      geometries:true
      
