@@ -247,7 +247,22 @@ points(cor.sem.nb1.5.w$correlation[1:20], pch=2, cex=1.2)
 lines(cor.sem.nb1.5.w$correlation[1:20], lwd=1.5)
 
 ```
+Moran's I test
+```{R}
+subols<-lm(scale(log(ratio))~scale(df$Annual_Mean_Temperature), data = df)
+res_subols<-residuals(subols)
 
+moran.test(res_subols,nb1.5.w, zero.policy = TRUE)
+
+
+```
+
+```{R}
+
+sub.sem.nb1.5.w<-errorsarlm(subols, listw = nb1.5.w,zero.policy = TRUE)
+moran.test(residuals(sub.sem.nb1.5.w),nb1.5.w, zero.policy = TRUE)
+
+```
 
 
 
@@ -419,6 +434,24 @@ lines(cor.sem.nb1.5.w$correlation[1:20], lwd=1.5)
 ```
 
 
+```{R}
+subols<-lm(scale(log(ratio))~scale(df$soil_moisture), data = df)
+res_subols<-residuals(subols)
+
+moran.test(res_subols,nb1.5.w, zero.policy = TRUE)
+
+
+```
+
+```{R}
+
+sub.sem.nb1.5.w<-errorsarlm(subols, listw = nb1.5.w,zero.policy = TRUE)
+moran.test(residuals(sub.sem.nb1.5.w),nb1.5.w, zero.policy = TRUE)
+
+```
+
+
+
 
 
 
@@ -584,6 +617,23 @@ abline(h=0)
 # then SARlag model residuals
 points(cor.sem.nb1.5.w$correlation[1:20], pch=2, cex=1.2)
 lines(cor.sem.nb1.5.w$correlation[1:20], lwd=1.5)
+
+```
+
+
+```{R}
+subols<-lm(scale(log(ratio))~scale(df$Annual_Mean_Temperature), data = df)
+res_subols<-residuals(subols)
+
+moran.test(res_subols,nb1.5.w, zero.policy = TRUE)
+
+
+```
+
+```{R}
+
+sub.sem.nb1.5.w<-errorsarlm(subols, listw = nb1.5.w,zero.policy = TRUE)
+moran.test(residuals(sub.sem.nb1.5.w),nb1.5.w, zero.policy = TRUE)
 
 ```
 
