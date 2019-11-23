@@ -207,6 +207,47 @@ moran.test(residuals(sem.nb1.5.w),nb1.5.w, zero.policy = TRUE)
 
 ```
 
+### Univariate correlation 
+
+
+```{R}
+for(i in c(1:10,12,13,15)){
+  print(names(df)[i])
+  subols<-lm(scale(log(ratio))~scale(df[,i]),data = df)
+  sum_subols<-summary(subols)
+  print(sum_subols)
+  res_subols<-residuals(subols)
+  
+  #print(moran.test(res_subols, nb1.5.w, zero.policy = TRUE))
+  
+  sub.sem.nb1.5.w<-errorsarlm(subols, listw = nb1.5.w,zero.policy = TRUE)
+  print(summary(sub.sem.nb1.5.w))
+  
+  #print(moran.test(residuals(sub.sem.nb1.5.w),nb1.5.w, zero.policy = TRUE))
+}
+
+
+```
+Moran's I plot
+
+```{R}
+subols<-lm(scale(log(ratio))~scale(df$Annual_Mean_Temperature), data = df)
+res_subols<-residuals(subols)
+cor.ols.res<-correlog(df$longitude, df$latitude, z=res_subols, na.rm=T, increment=1, resamp=1, latlon = FALSE)
+
+
+sub.sem.nb1.5.w<-errorsarlm(subols, listw = nb1.5.w,zero.policy = TRUE)
+cor.sem.nb1.5.w<-correlog(df$longitude, df$latitude, z = residuals(sub.sem.nb1.5.w), na.rm = T, increment = 1, resamp = 1, latlon = FALSE)
+
+plot(cor.ols.res$correlation[1:20], type="b", pch=1, cex=1.5, lwd=1.5, xlab="Distance class", ylab="Moran's I", cex.lab=1.5, cex.axis=1.5)
+abline(h=0)
+
+# then SARlag model residuals
+points(cor.sem.nb1.5.w$correlation[1:20], pch=2, cex=1.2)
+lines(cor.sem.nb1.5.w$correlation[1:20], lwd=1.5)
+
+```
+
 
 
 
@@ -337,6 +378,49 @@ moran.test(residuals(sem.nb1.5.w), nb1.5.w,zero.policy = TRUE)
 
 ```
 
+### Univariate correlation
+
+```{R}
+
+for(i in c(1:10,12,13,15)){
+  print(names(df)[i])
+  subols<-lm(scale(log(ratio))~scale(df[,i]),data = df)
+  sum_subols<-summary(subols)
+  print(sum_subols)
+  res_subols<-residuals(subols)
+  
+  #print(moran.test(res_subols, nb1.5.w, zero.policy = TRUE))
+  
+  sub.sem.nb1.5.w<-errorsarlm(subols, listw = nb1.5.w,zero.policy = TRUE)
+  print(summary(sub.sem.nb1.5.w))
+  
+  #print(moran.test(residuals(sub.sem.nb1.5.w),nb1.5.w, zero.policy = TRUE))
+}
+```
+
+
+
+```{R}
+subols<-lm(scale(log(ratio))~scale(df$soil_moisture), data = df)
+res_subols<-residuals(subols)
+cor.ols.res<-correlog(df$longitude, df$latitude, z=res_subols, na.rm=T, increment=1, resamp=1, latlon = FALSE)
+
+
+sub.sem.nb1.5.w<-errorsarlm(subols, listw = nb1.5.w,zero.policy = TRUE)
+cor.sem.nb1.5.w<-correlog(df$longitude, df$latitude, z = residuals(sub.sem.nb1.5.w), na.rm = T, increment = 1, resamp = 1, latlon = FALSE)
+
+plot(cor.ols.res$correlation[1:20], type="b", pch=1, cex=1.5, lwd=1.5, xlab="Distance class", ylab="Moran's I", cex.lab=1.5, cex.axis=1.5)
+abline(h=0)
+
+# then SARlag model residuals
+points(cor.sem.nb1.5.w$correlation[1:20], pch=2, cex=1.2)
+lines(cor.sem.nb1.5.w$correlation[1:20], lwd=1.5)
+
+```
+
+
+
+
 
 shrublands
 
@@ -465,6 +549,48 @@ moran.test(residuals(sem.nb1.5.w), nb1.5.w,zero.policy = TRUE)
 
 ```
 
+### Shrubland univariate regression
+
+```{R}
+for(i in c(1:10,12,13,15)){
+  print(names(df)[i])
+  subols<-lm(scale(log(ratio))~scale(df[,i]),data = df)
+  sum_subols<-summary(subols)
+  print(sum_subols)
+  res_subols<-residuals(subols)
+  
+  #print(moran.test(res_subols, nb1.5.w, zero.policy = TRUE))
+  
+  sub.sem.nb1.5.w<-errorsarlm(subols, listw = nb1.5.w,zero.policy = TRUE)
+  print(summary(sub.sem.nb1.5.w))
+  
+  #print(moran.test(residuals(sub.sem.nb1.5.w),nb1.5.w, zero.policy = TRUE))
+}
+
+```
+
+```{R}
+subols<-lm(scale(log(ratio))~scale(df$Annual_Mean_Temperature), data = df)
+res_subols<-residuals(subols)
+cor.ols.res<-correlog(df$longitude, df$latitude, z=res_subols, na.rm=T, increment=1, resamp=1, latlon = FALSE)
+
+
+sub.sem.nb1.5.w<-errorsarlm(subols, listw = nb1.5.w,zero.policy = TRUE)
+cor.sem.nb1.5.w<-correlog(df$longitude, df$latitude, z = residuals(sub.sem.nb1.5.w), na.rm = T, increment = 1, resamp = 1, latlon = FALSE)
+
+plot(cor.ols.res$correlation[1:20], type="b", pch=1, cex=1.5, lwd=1.5, xlab="Distance class", ylab="Moran's I", cex.lab=1.5, cex.axis=1.5)
+abline(h=0)
+
+# then SARlag model residuals
+points(cor.sem.nb1.5.w$correlation[1:20], pch=2, cex=1.2)
+lines(cor.sem.nb1.5.w$correlation[1:20], lwd=1.5)
+
+```
+
+
+
+
+
 
 ```{R}
 forest.sem<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\forest_sem.csv')
@@ -540,6 +666,68 @@ ggplot(rsrplot, aes(x = X, y = Estimate, fill = vegetation.type))+
   
 
 ```
+
+
+#### For univariate regressions
+
+```{R}
+uniresult<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\univariate_corr.csv')
+
+head(uniresult)
+```
+
+```{R}
+uniresult$items<-factor(uniresult$items, levels = c('Human footprint','Elevation','Eastness','Soil moisture','Sand content','Depth to bedrock','Bulk density','NDVI','Radiation of warmest quarter','Precipitation of warmest quarter','Precipitation seasonality','Annual precipitation','Annual mean temperature'), ordered = TRUE)
+uniresult$items
+```
+
+```{R}
+library(ggplot2)
+
+ggplot(uniresult, aes(x = items, y = SAR.model.coefficient, fill = Vegetation.type))+
+  geom_bar(stat = 'identity',position = position_dodge(),color = 'black')+
+  #geom_errorbar(aes(ymin = Estimate - 2*rsrplot$Std..Error, ymax = Estimate + 2*rsrplot$Std..Error), position = position_dodge(.9), width = 0)+
+  coord_flip()+
+  theme_classic()+
+  geom_hline(yintercept = 0)+
+  theme(axis.text = element_text(angle = 0, hjust = 1))+
+  annotate('rect',xmin = -Inf, xmax = 1.5, ymin = -Inf, ymax = Inf, fill = 'grey80',alpha = 0.3)+
+  annotate('rect',xmin = 2.5, xmax = 3.5, ymin = -Inf, ymax = Inf, fill = 'grey80', alpha = 0.3)+
+  annotate('rect',xmin = 4.5, xmax = 5.5, ymin = -Inf, ymax = Inf, fill = 'grey80', alpha = 0.3)+
+  annotate('rect',xmin = 6.5, xmax = 7.5, ymin = -Inf, ymax = Inf, fill = 'grey80', alpha = 0.3)+
+  annotate('rect',xmin = 8.5, xmax = 9.5, ymin = -Inf, ymax = Inf, fill = 'grey80', alpha = 0.3)+
+  annotate('rect',xmin = 10.5, xmax = 11.5, ymin = -Inf, ymax = Inf, fill = 'grey80', alpha = 0.3)+
+  annotate('rect',xmin = 12.5, xmax = 13.5, ymin = -Inf, ymax = Inf, fill = 'grey80', alpha = 0.3)+
+  annotate('text', x = 11.64, y = -0.187,label = '*')+
+  annotate('text', x = 11.24, y = 0.279, label  = '*')+
+  annotate('text', x = 12.24, y = -0.193, label = '*')+
+  annotate('text', x = 12.64, y = -0.189, label = '*')+
+  annotate('text', x = 11.94, y = -0.095, label = '*')+
+  annotate('text',x = 10.64, y = -0.089, label = '*')+
+  annotate('text', x = 10.94, y = 0.219, label = '*')+
+  annotate('text', x = 9.64, y = -0.168, label = '*')+
+  annotate('text', x = 8.94, y = 0.14, label = '*')+
+  annotate('text',x = 8.64, y = 0.119, label = '*')+
+  annotate('text',x = 7.94, y = -0.139, label = '*')+
+  annotate('text',x = 7.64, y = -0.094, label = '*')+
+  annotate('text',x = 13.24, y = -0.251, label = '*')+
+  annotate('text',x = 9.24, y = -0.173, label = '*')+
+  annotate('text', x = 6.64, y = -0.088, label = '*')+
+  annotate('text', x = 4.94, y = 0.084, label = '*')+
+  annotate('text',x = 4.64, y = 0.113, label = '*')+
+  annotate('text', x = 3.94, y = -0.263, label = '*')+
+  annotate('text', x = 3.64, y = -0.128, label = '*')+
+  annotate('text',x = 1.94, y = 0.314, label = '*')+
+  annotate('text', x = 1.64, y = -0.084, label = '*')+
+  annotate('text', x = 1.24, y = -0.163, label = '*')
+ 
+  
+
+```
+
+
+
+
 
 
 
