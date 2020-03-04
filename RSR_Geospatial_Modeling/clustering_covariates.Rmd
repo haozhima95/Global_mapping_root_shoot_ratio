@@ -4,27 +4,29 @@ author: "Haozhi Ma"
 date: "10/29/2019"
 output: html_document
 ---
-now I load the data to this script
+## Forests
+
+### now I load the data to this script
 
 
 ```{R}
 df.for.clustering<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_rsr_sample_for_grsearch_20191022.csv')
 
 ```
-have a look at the dataset
+### have a look at the dataset
 ```{R}
 names(df.for.clustering)
 
 ```
 
-delete the irrelevant covariates
+### delete the irrelevant covariates
 
 ```{R}
 df.for.clustering_sub<-subset(df.for.clustering, select = -c(system.index, Abs_Lat, Pixel_Lat, Pixel_Long, X, X_1, index, latitude, longitude, latitude_209564535, longitude_209564535, .geo, Global_Biomass_IPCC))
 
 names(df.for.clustering_sub)
 ```
-load the package
+### load the package
 
 ```{R}
 library(ClustOfVar)
@@ -33,13 +35,14 @@ library(cluster)
 xquant<-df.for.clustering_sub[,c(1:24,32:59,61,62)]
 xquant<-scale(xquant)
 ```
-seek out the patterns in the variables using a dendrogram. Dendrograms are graphic displays that show how closely each of the variables are related.
+### Seek out the patterns in the variables using a dendrogram. 
+#### Dendrograms are graphic displays that show how closely each of the variables are related.
 ```{R}
 
 tree<-hclustvar(xquant)
 plot(tree)
 ```
-estimate the number of clusters
+### Estimate the number of clusters
 
 ```{R}
 stab<-stability(tree, B = 50)
@@ -47,20 +50,21 @@ stab<-stability(tree, B = 50)
 
 ```
 
-It seems that 35 clusters show the best stability
+#### It seems that 18 clusters show the best stability
 
 ```{R}
 k.means<-kmeansvar(xquant,init = 18)
 summary(k.means)
 
 ```
+### Choose the covariaties that partitioned by the model done above.
 
 ```{R}
 df<-df.for.clustering[,c(5,7,17,63,4,12,27,62,41,45,37,52,54,57,74,72,68,66)]
 namelist<-names(df)
 namelist
 ```
-
+#### Have a look at the structure...
 
 ```{R}
 #df<-scale(df)
@@ -69,18 +73,8 @@ summary(df)
 ```
 
 
-
-```{R}
-#df<-scale(df)
-#library(relaimpo)
-for(i in 1:(NCOL(df)-1)){
-corr<-lm(scale(log(ratio))~scale(df[,i]), data = df)
-print(summary(corr))
-print(paste0(namelist[i],'____',corr$coefficients[2]))
-}
-```
-
-Let's here check sac. Now Moran's I
+### Let's here check sac. 
+### Now Moran's I
 ```{R}
 library(spdep)
 library(ncf)
@@ -92,7 +86,7 @@ corrds<-as.matrix(coords)
 
 ```
 
-define the neighborhood (here distance is 1.5)
+#### define the neighborhood (here distance is 2)
 
 ```{R}
 nb1.5<-dnearneigh(coords,0,2,longlat = FALSE)
@@ -101,13 +95,15 @@ nb1.5<-dnearneigh(coords,0,2,longlat = FALSE)
 
 ```
 
-spatial weights illustrated with coding style 'W'
+### spatial weights illustrated with coding style 'W'
 
 ```{R}
 nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
 
 
 ```
+
+### VIF.....
 ```{R}
 library(HH)
 #library(car)
@@ -266,20 +262,21 @@ moran.test(residuals(sub.sem.nb1.5.w),nb1.5.w, zero.policy = TRUE)
 
 
 
-grassland
-
+## Grassland
+### Load the data
 ```{R}
 grassdf.for.clustering<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_rsr_sample_for_grsearch_20191022.csv')
 
 ```
+### Check the dataset structure.
 have a look at the dataset
 ```{R}
 names(grassdf.for.clustering)
 
 ```
 
-
-
+### As we have done the clustering approach, here we directly select the covariates.
+#### "df" is rewritten here.
 ```{R}
 df<-grassdf.for.clustering[,c(5,7,17,63,4,12,27,62,41,45,37,52,54,57,74,72,68,66)]
 namelist<-names(df)
@@ -293,14 +290,14 @@ namelist[1]
 summary(df)
 ```
 
-
+### We may do the SAC check once again in grassland dataset.
 ```{R}
 coords<-cbind(df$longitude, df$latitude)
 corrds<-as.matrix(coords)
 
 ```
 
-define the neighborhood (here distance is 1.5)
+#### Define the neighborhood (here distance is 2)
 
 ```{R}
 nb1.5<-dnearneigh(coords,0,2,longlat = FALSE)
@@ -309,7 +306,7 @@ nb1.5<-dnearneigh(coords,0,2,longlat = FALSE)
 
 ```
 
-spatial weights illustrated with coding style 'W'
+#### Spatial weights illustrated with coding style 'W'
 
 ```{R}
 nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
@@ -338,7 +335,7 @@ cor.ols.res<-correlog(df$longitude, df$latitude, z=residuals(ols), na.rm=T, incr
 
 ```
 
-plot the correlogram
+#### Plot the correlogram
 
 ```{R}
 plot(cor.ols.res$correlation[1:35], type = 'b', pch = 1, cex = 1.2, lwd = 1.5, xlab = 'distance', ylab = "Moran's I", cex.lab = 1.5, cex.axis = 1.2)
@@ -413,7 +410,7 @@ for(i in c(1:10,12,13,15)){
 }
 ```
 
-
+#### Check if the most important covariate really reduce the Moran's I.
 
 ```{R}
 subols<-lm(scale(log(ratio))~scale(df$soil_moisture), data = df)
@@ -449,20 +446,20 @@ sub.sem.nb1.5.w<-errorsarlm(subols, listw = nb1.5.w,zero.policy = TRUE)
 moran.test(residuals(sub.sem.nb1.5.w),nb1.5.w, zero.policy = TRUE)
 
 ```
+#### Turns out yes!!
 
 
 
 
 
-
-shrublands
+## Shrublands
 
 
 ```{R}
 shrubdf.for.clustering<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_rsr_sample_for_grsearch_20191024.csv')
 
 ```
-have a look at the dataset
+#### Have a look at the dataset
 ```{R}
 names(shrubdf.for.clustering)
 
@@ -483,14 +480,14 @@ namelist[1]
 summary(df)
 ```
 
-
+### test the SAC again in shrubland dataset.
 ```{R}
 coords<-cbind(df$longitude, df$latitude)
 corrds<-as.matrix(coords)
 
 ```
 
-define the neighborhood (here distance is 2)
+#### Define the neighborhood (here distance is 2)
 
 ```{R}
 nb1.5<-dnearneigh(coords,0,2,longlat = FALSE)
@@ -499,7 +496,7 @@ nb1.5<-dnearneigh(coords,0,2,longlat = FALSE)
 
 ```
 
-spatial weights illustrated with coding style 'W'
+#### Spatial weights illustrated with coding style 'W'
 
 ```{R}
 nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
@@ -527,7 +524,7 @@ cor.ols.res<-correlog(df$longitude, df$latitude, z=residuals(ols), na.rm=T, incr
 
 ```
 
-plot the correlogram
+#### plot the correlogram
 
 ```{R}
 plot(cor.ols.res$correlation[1:35], type = 'b', pch = 1, cex = 1.2, lwd = 1.5, xlab = 'distance', ylab = "Moran's I", cex.lab = 1.5, cex.axis = 1.2)
@@ -601,7 +598,7 @@ for(i in c(1:10,12,13,15)){
 }
 
 ```
-
+#### Check if the most important covariate really push down the Moran's I, which means eliminating SAC.
 ```{R}
 subols<-lm(scale(log(ratio))~scale(df$Annual_Mean_Temperature), data = df)
 res_subols<-residuals(subols)
@@ -639,9 +636,9 @@ moran.test(residuals(sub.sem.nb1.5.w),nb1.5.w, zero.policy = TRUE)
 
 
 
+## Creating correlation plots
 
-
-
+### Load all the data
 ```{R}
 forest.sem<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\forest_sem.csv')
 forest.sem
