@@ -6,33 +6,34 @@
 
 var st = 'users/haozhima95/rootshootratio/';
 // Set the cover
-
+// Forests
 var image = ee.Image("users/haozhima95/consensus_full_class_tree1"),
     image2 = ee.Image("users/haozhima95/consensus_full_class_tree2"),
     image3 = ee.Image("users/haozhima95/consensus_full_class_tree3"),
     image4 = ee.Image("users/haozhima95/consensus_full_class_tree4");
-
+// Grasslands
 var grasscover = ee.Image("users/haozhima95/consensus_full_class_grass");
-
+// Shrublands
 var shrubcover = ee.Image("users/haozhima95/consensus_full_class_shrub");
 
+// Summarized forest cover.
 var all_tree = ee.ImageCollection([image, image2, image3, image4]);
     all_tree = all_tree.sum();
 var treemask = all_tree.gte(10);
 var treerange = all_tree.mask(treemask.gt(0));
 
 var grassmask = grasscover.gte(10);
-
+// Summerized grassland range.
 var grassrange = grasscover.mask(grassmask.gt(0));
 
 var shrubmask = shrubcover.gte(10);
-
+// Summerized shrubland range.
 var shrubrange = shrubcover.mask(shrubmask.gt(0));
 
 
 // Forests.
-var forestmodelname = 'forest_rmf_model_aggregate_first_'
-var forest = ee.Image(st+forestmodelname+'1_20200517');
+var forestmodelname = 'forest_rmf_model_aggregate_first_' // Set the file route of forest files.
+var forest = ee.Image(st+forestmodelname+'1_20200517'); // Load forest files.
 // Get the list.
 var forestlist = ee.List([forest]);
 // Loop the rest layers and add them to the list.
@@ -112,7 +113,9 @@ var modeltype = ['mean','std','min','max'];
 // Set the polygon
 
 var unboundedGeo = ee.Geometry.Polygon([-180, 88, 0, 88, 180, 88, 180, -88, 0, -88, -180, -88], null, false);
+// Exporting.
 
+// Export maps to drive and asset.
 Export.image.toAsset({
   image:forestmean,
   description:'forest_rmf_map_mean_20200517',
