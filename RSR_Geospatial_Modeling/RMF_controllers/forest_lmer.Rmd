@@ -1,0 +1,625 @@
+---
+title: "forest_lmer"
+author: "Haozhi Ma"
+date: "6/6/2020"
+output: html_document
+---
+
+This script is used for lmer analysis for forest rmfs. This approach is similar to what we did in 'alldata' subsampling analysis. The only difference happens in the random effect.
+
+#### Load the data
+
+```{R}
+forestds<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_rsr_sample_for_grsearch_20200517.csv') # Read the data
+forestds$veg.type<-'forest'
+
+names(forestds)
+```
+
+#### Choose the variables.
+```{R}
+var.to.choose<-c('Aridity_Index', # This one comprimises the deletion of all precipitation related variables, to make the chosen variables comprehensive.
+                 #'elevation',
+'Annual_Mean_Temperature',
+                 #'Temperature_Seasonality',
+                 #'Annual_Precipitation',
+                 #'Precipitation_Seasonality',
+                 'soil_moisture',
+                 'cnratio',
+                 'Depth_to_Bedrock',
+                 'Sand_Content_15cm',
+                 'NDVI',
+                 'Tree_Density',
+                 'rmf')
+
+
+```
+
+#### subset the dataset
+```{R}
+forestds.common.ols<-forestds[,var.to.choose] # Sub-sample the raw data to reduce the satistical burden.
+head(forestds.common.ols)
+
+```
+#### Check the vif
+```{R}
+library(HH)
+vif(forestds.common.ols[,c(1:8)]) # Check the variable inflation factor. Here we set the threshold is 3.
+
+```
+
+
+
+#### Istantiate bootstrapping
+
+```{R}
+B <- 1000
+result.list<-vector('list',B)
+#print(result.list)
+sacresult<-vector('numeric',B) # Sar model p value
+```
+
+#### Instantiate a loop to randomly subsample the sample.
+
+```{R}
+set.seed(10) # Set the random starting point.
+
+
+
+
+for(i in 1:B){ # Loop to get the result of each replicate
+  if(i%%100 == 0){
+    print(i) # Show how far we are.
+  }
+  rows<-sample(1:nrow(forestds),1700,replace = TRUE) # Randomly choose row names.
+  
+  subds<-forestds[rows,] # Choose the rows.
+  rmfls<-lm(scale(rmf)~scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = subds) # Linear model is set.
+varls<-lm(scale(Annual_Mean_Temperature)~scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = subds)
+ common.ols<-lm(resid(rmfls)~resid(varls))
+sum.ols<-summary(common.ols)
+  
+  #result.list[[i]]<-sum.ols$coefficients # The data table of coefficients will be saved in a list of dataframes for further summary.
+  ## Check SAC
+  coords<-cbind(subds$longitude, subds$latitude) # Set coordinates.
+  corrds<-as.matrix(coords)
+  nb1.5<-dnearneigh(coords,0,2,longlat = TRUE) # Set distance class.
+  nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
+  moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
+
+  sacresult[i]<-moran.result$p.value # The P value shows if the SAC is significantly high. This value is stored in a vector to get the distribution of all P values and have a look at the 0.1% quantile.
+  if(moran.result$p.value>=0.05){
+    result.list[[i]]<-sum.ols$coefficients # The data table of coefficients will be saved in a list of dataframes for further summary.
+  }
+}
+
+```
+
+
+
+```{R}
+library(abind)
+all.matrix<-abind(result.list,along = 3) # Covert the coefficient list to a list of matrix.
+
+apply(all.matrix, c(1,2), mean) # Get the mean of all matrices for each element.
+```
+
+
+```{R}
+hist(sacresult) # Have a look at the distribution of P value to see if such a subsample approach reduce the significance of spatial autocorrelation.
+quantile(sacresult,0.001)
+quantile(sacresult,0.05)
+```
+
+
+```{R}
+
+library(spdep)
+rmfls<-lm(scale(rmf)~scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock)+scale(elevation),data = forestds) # Linear model is set.
+varls<-lm(scale(Annual_Mean_Temperature)~scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock)+scale(elevation),data = forestds)
+common.ols<-lm(resid(rmfls)~resid(varls))
+
+# plot(resid(varls),resid(rmfls))
+coords<-cbind(forestds$longitude, forestds$latitude) # Set coordinates.
+  corrds<-as.matrix(coords)
+  nb1.5<-dnearneigh(coords,0,2,longlat = TRUE) # Set distance class.
+  nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
+  moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
+
+
+
+```
+
+
+
+
+```{R}
+B <- 1000
+result.list<-vector('list',B)
+#print(result.list)
+sacresult<-vector('numeric',B) # Sar model p value
+```
+
+#### Instantiate a loop to randomly subsample the sample.
+
+```{R}
+set.seed(10) # Set the random starting point.
+
+
+
+
+for(i in 1:B){ # Loop to get the result of each replicate
+  if(i%%100 == 0){
+    print(i) # Show how far we are.
+  }
+  rows<-sample(1:nrow(forestds),1700,replace = TRUE) # Randomly choose row names.
+  
+  subds<-forestds[rows,] # Choose the rows.
+rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = subds) # Linear model is set.
+varls<-lm(scale(Tree_Density)~scale(Annual_Mean_Temperature)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = subds)
+ common.ols<-lm(resid(rmfls)~resid(varls))
+sum.ols<-summary(common.ols)
+  
+  # result.list[[i]]<-sum.ols$coefficients # The data table of coefficients will be saved in a list of dataframes for further summary.
+  ## Check SAC
+  coords<-cbind(subds$longitude, subds$latitude) # Set coordinates.
+  corrds<-as.matrix(coords)
+  nb1.5<-dnearneigh(coords,0,2,longlat = TRUE) # Set distance class.
+  nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
+  moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
+
+  sacresult[i]<-moran.result$p.value # The P value shows if the SAC is significantly high. This value is stored in a vector to get the distribution of all P values and have a look at the 0.1% quantile.
+  if (moran.result$p.value>=0.05){
+    result.list[[i]]<-sum.ols$coefficients # The data table of coefficients will be saved in a list of dataframes for further summary.
+  }
+  
+}
+
+```
+
+```{R}
+library(abind)
+all.matrix<-abind(result.list,along = 3) # Covert the coefficient list to a list of matrix.
+
+apply(all.matrix, c(1,2), mean) # Get the mean of all matrices for each element.
+```
+
+
+```{R}
+hist(sacresult) # Have a look at the distribution of P value to see if such a subsample approach reduce the significance of spatial autocorrelation.
+quantile(sacresult,0.001)
+```
+
+
+
+```{R}
+B <- 1000
+result.list<-vector('list',B)
+#print(result.list)
+sacresult<-vector('numeric',B) # Sar model p value
+```
+
+#### Instantiate a loop to randomly subsample the sample.
+
+```{R}
+set.seed(10) # Set the random starting point.
+
+
+
+
+for(i in 1:B){ # Loop to get the result of each replicate
+  if(i%%100 == 0){
+    print(i) # Show how far we are.
+  }
+  rows<-sample(1:nrow(forestds),1700,replace = TRUE) # Randomly choose row names.
+  
+  subds<-forestds[rows,] # Choose the rows.
+rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = subds) # Linear model is set.
+varls<-lm(scale(NDVI)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = subds)
+ common.ols<-lm(resid(rmfls)~resid(varls))
+sum.ols<-summary(common.ols)
+  
+  
+  ## Check SAC
+  coords<-cbind(subds$longitude, subds$latitude) # Set coordinates.
+  corrds<-as.matrix(coords)
+  nb1.5<-dnearneigh(coords,0,2,longlat = TRUE) # Set distance class.
+  nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
+  moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
+
+  sacresult[i]<-moran.result$p.value # The P value shows if the SAC is significantly high. This value is stored in a vector to get the distribution of all P values and have a look at the 0.1% quantile.
+if (moran.result$p.value>=0.05){
+  result.list[[i]]<-sum.ols$coefficients # The data table of coefficients will be saved in a list of dataframes for further summary.
+}
+}
+
+```
+
+
+
+```{R}
+library(abind)
+all.matrix<-abind(result.list,along = 3) # Covert the coefficient list to a list of matrix.
+
+apply(all.matrix, c(1,2), mean) # Get the mean of all matrices for each element.
+```
+
+
+```{R}
+hist(sacresult) # Have a look at the distribution of P value to see if such a subsample approach reduce the significance of spatial autocorrelation.
+quantile(sacresult,0.001)
+quantile(sacresult,0.05)
+```
+
+
+
+```{R}
+B <- 1000
+result.list<-vector('list',B)
+#print(result.list)
+sacresult<-vector('numeric',B) # Sar model p value
+```
+
+#### Instantiate a loop to randomly subsample the sample.
+
+```{R}
+set.seed(10) # Set the random starting point.
+
+
+
+
+for(i in 1:B){ # Loop to get the result of each replicate
+  if(i%%100 == 0){
+    print(i) # Show how far we are.
+  }
+  rows<-sample(1:nrow(forestds),1700,replace = TRUE) # Randomly choose row names.
+  
+  subds<-forestds[rows,] # Choose the rows.
+rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = subds) # Linear model is set.
+varls<-lm(scale(cnratio)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = subds)
+ common.ols<-lm(resid(rmfls)~resid(varls))
+sum.ols<-summary(common.ols)
+  
+  ## Check SAC
+  coords<-cbind(subds$longitude, subds$latitude) # Set coordinates.
+  corrds<-as.matrix(coords)
+  nb1.5<-dnearneigh(coords,0,2,longlat = TRUE) # Set distance class.
+  nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
+  moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
+
+  sacresult[i]<-moran.result$p.value # The P value shows if the SAC is significantly high. This value is stored in a vector to get the distribution of all P values and have a look at the 0.1% quantile.
+  if (moran.result$p.value>=0.05){
+      result.list[[i]]<-sum.ols$coefficients # The data table of coefficients will be saved in a list of dataframes for further summary.
+
+  }
+}
+
+```
+
+
+
+```{R}
+library(abind)
+all.matrix<-abind(result.list,along = 3) # Covert the coefficient list to a list of matrix.
+
+apply(all.matrix, c(1,2), mean) # Get the mean of all matrices for each element.
+```
+
+
+```{R}
+hist(sacresult) # Have a look at the distribution of P value to see if such a subsample approach reduce the significance of spatial autocorrelation.
+quantile(sacresult,0.001)
+quantile(sacresult,0.05)
+```
+
+```{R}
+B <- 1000
+result.list<-vector('list',B)
+#print(result.list)
+sacresult<-vector('numeric',B) # Sar model p value
+```
+
+#### Instantiate a loop to randomly subsample the sample.
+
+```{R}
+set.seed(10) # Set the random starting point.
+
+
+
+
+for(i in 1:B){ # Loop to get the result of each replicate
+  if(i%%100 == 0){
+    print(i) # Show how far we are.
+  }
+  rows<-sample(1:nrow(forestds),1700,replace = TRUE) # Randomly choose row names.
+  
+  subds<-forestds[rows,] # Choose the rows.
+rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = subds) # Linear model is set.
+varls<-lm(scale(Aridity_Index)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = subds)
+ common.ols<-lm(resid(rmfls)~resid(varls))
+sum.ols<-summary(common.ols)
+  
+  ## Check SAC
+  coords<-cbind(subds$longitude, subds$latitude) # Set coordinates.
+  corrds<-as.matrix(coords)
+  nb1.5<-dnearneigh(coords,0,2,longlat = TRUE) # Set distance class.
+  nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
+  moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
+
+  sacresult[i]<-moran.result$p.value # The P value shows if the SAC is significantly high. This value is stored in a vector to get the distribution of all P values and have a look at the 0.1% quantile.
+  if(moran.result$p.value>=0.05){
+      result.list[[i]]<-sum.ols$coefficients # The data table of coefficients will be saved in a list of dataframes for further summary.
+
+  }
+}
+
+```
+
+```{R}
+library(abind)
+all.matrix<-abind(result.list,along = 3) # Covert the coefficient list to a list of matrix.
+
+apply(all.matrix, c(1,2), mean) # Get the mean of all matrices for each element.
+```
+
+
+```{R}
+hist(sacresult) # Have a look at the distribution of P value to see if such a subsample approach reduce the significance of spatial autocorrelation.
+quantile(sacresult,0.001)
+quantile(sacresult,0.05)
+```
+
+
+
+```{R}
+B <- 1000
+result.list<-vector('list',B)
+#print(result.list)
+sacresult<-vector('numeric',B) # Sar model p value
+```
+
+#### Instantiate a loop to randomly subsample the sample.
+
+```{R}
+set.seed(10) # Set the random starting point.
+
+
+
+
+for(i in 1:B){ # Loop to get the result of each replicate
+  if(i%%100 == 0){
+    print(i) # Show how far we are.
+  }
+  rows<-sample(1:nrow(forestds),1700,replace = TRUE) # Randomly choose row names.
+  
+  subds<-forestds[rows,] # Choose the rows.
+rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = subds) # Linear model is set.
+varls<-lm(scale(soil_moisture)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = subds)
+ common.ols<-lm(resid(rmfls)~resid(varls))
+sum.ols<-summary(common.ols)
+  
+  #result.list[[i]]<-sum.ols$coefficients # The data table of coefficients will be saved in a list of dataframes for further summary.
+  ## Check SAC
+  coords<-cbind(subds$longitude, subds$latitude) # Set coordinates.
+  corrds<-as.matrix(coords)
+  nb1.5<-dnearneigh(coords,0,2,longlat = TRUE) # Set distance class.
+  nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
+  moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
+
+  sacresult[i]<-moran.result$p.value # The P value shows if the SAC is significantly high. This value is stored in a vector to get the distribution of all P values and have a look at the 0.1% quantile.
+  if (moran.result$p.value>=0.05){
+    result.list[[i]]<-sum.ols$coefficients # The data table of coefficients will be saved in a list of dataframes for further summary.
+  }
+}
+
+```
+
+
+```{R}
+library(abind)
+all.matrix<-abind(result.list,along = 3) # Covert the coefficient list to a list of matrix.
+
+apply(all.matrix, c(1,2), mean) # Get the mean of all matrices for each element.
+```
+
+
+```{R}
+hist(sacresult) # Have a look at the distribution of P value to see if such a subsample approach reduce the significance of spatial autocorrelation.
+quantile(sacresult,0.001)
+quantile(sacresult,0.05)
+```
+
+```{R}
+rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock)+scale(elevation),data = forestds) # Linear model is set.
+varls<-lm(scale(soil_moisture)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock)+scale(elevation),data = forestds)
+
+
+plot(resid(varls), resid(rmfls))
+
+```
+
+
+
+
+
+```{R}
+B <- 1000
+result.list<-vector('list',B)
+#print(result.list)
+sacresult<-vector('numeric',B) # Sar model p value
+```
+
+#### Instantiate a loop to randomly subsample the sample.
+
+```{R}
+set.seed(10) # Set the random starting point.
+
+
+
+
+for(i in 1:B){ # Loop to get the result of each replicate
+  if(i%%100 == 0){
+    print(i) # Show how far we are.
+  }
+  rows<-sample(1:nrow(forestds),1700,replace = TRUE) # Randomly choose row names.
+  
+  subds<-forestds[rows,] # Choose the rows.
+rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Depth_to_Bedrock),data = subds) # Linear model is set.
+varls<-lm(scale(Sand_Content_15cm)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Depth_to_Bedrock),data = subds)
+ common.ols<-lm(resid(rmfls)~resid(varls))
+sum.ols<-summary(common.ols)
+  
+  ## Check SAC
+  coords<-cbind(subds$longitude, subds$latitude) # Set coordinates.
+  corrds<-as.matrix(coords)
+  nb1.5<-dnearneigh(coords,0,2,longlat = TRUE) # Set distance class.
+  nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
+  moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
+
+  sacresult[i]<-moran.result$p.value # The P value shows if the SAC is significantly high. This value is stored in a vector to get the distribution of all P values and have a look at the 0.1% quantile.
+  if (moran.result$p.value>=0.05){
+      result.list[[i]]<-sum.ols$coefficients # The data table of coefficients will be saved in a list of dataframes for further summary.
+
+  }
+}
+
+```
+
+```{R}
+library(abind)
+all.matrix<-abind(result.list,along = 3) # Covert the coefficient list to a list of matrix.
+
+apply(all.matrix, c(1,2), mean) # Get the mean of all matrices for each element.
+```
+
+
+```{R}
+hist(sacresult) # Have a look at the distribution of P value to see if such a subsample approach reduce the significance of spatial autocorrelation.
+quantile(sacresult,0.001)
+quantile(sacresult,0.05)
+```
+
+
+
+
+```{R}
+B <- 1000
+result.list<-vector('list',B)
+#print(result.list)
+sacresult<-vector('numeric',B) # Sar model p value
+```
+
+#### Instantiate a loop to randomly subsample the sample.
+
+```{R}
+set.seed(10) # Set the random starting point.
+
+
+
+
+for(i in 1:B){ # Loop to get the result of each replicate
+  if(i%%100 == 0){
+    print(i) # Show how far we are.
+  }
+  rows<-sample(1:nrow(forestds),1700,replace = TRUE) # Randomly choose row names.
+  
+  subds<-forestds[rows,] # Choose the rows.
+rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = subds) # Linear model is set.
+varls<-lm(scale(elevation)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = subds)
+ common.ols<-lm(resid(rmfls)~resid(varls))
+sum.ols<-summary(common.ols)
+  
+  result.list[[i]]<-sum.ols$coefficients # The data table of coefficients will be saved in a list of dataframes for further summary.
+  ## Check SAC
+  coords<-cbind(subds$longitude, subds$latitude) # Set coordinates.
+  corrds<-as.matrix(coords)
+  nb1.5<-dnearneigh(coords,0,2,longlat = TRUE) # Set distance class.
+  nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
+  moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
+
+  sacresult[i]<-moran.result$p.value # The P value shows if the SAC is significantly high. This value is stored in a vector to get the distribution of all P values and have a look at the 0.1% quantile.
+  
+}
+
+```
+
+
+```{R}
+library(abind)
+all.matrix<-abind(result.list,along = 3) # Covert the coefficient list to a list of matrix.
+
+apply(all.matrix, c(1,2), mean) # Get the mean of all matrices for each element.
+```
+
+
+```{R}
+hist(sacresult) # Have a look at the distribution of P value to see if such a subsample approach reduce the significance of spatial autocorrelation.
+quantile(sacresult,0.001)
+```
+
+
+
+```{R}
+B <- 1000
+result.list<-vector('list',B)
+#print(result.list)
+sacresult<-vector('numeric',B) # Sar model p value
+```
+
+#### Instantiate a loop to randomly subsample the sample.
+
+```{R}
+set.seed(10) # Set the random starting point.
+
+
+
+
+for(i in 1:B){ # Loop to get the result of each replicate
+  if(i%%100 == 0){
+    print(i) # Show how far we are.
+  }
+  rows<-sample(1:nrow(forestds),1700,replace = TRUE) # Randomly choose row names.
+  
+  subds<-forestds[rows,] # Choose the rows.
+rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm),data = subds) # Linear model is set.
+varls<-lm(scale(Depth_to_Bedrock)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm),data = subds)
+ common.ols<-lm(resid(rmfls)~resid(varls))
+sum.ols<-summary(common.ols)
+  
+  ## Check SAC
+  coords<-cbind(subds$longitude, subds$latitude) # Set coordinates.
+  corrds<-as.matrix(coords)
+  nb1.5<-dnearneigh(coords,0,2,longlat = TRUE) # Set distance class.
+  nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
+  moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
+
+  sacresult[i]<-moran.result$p.value # The P value shows if the SAC is significantly high. This value is stored in a vector to get the distribution of all P values and have a look at the 0.1% quantile.
+  if (moran.result$p.value>=0.05){
+      result.list[[i]]<-sum.ols$coefficients # The data table of coefficients will be saved in a list of dataframes for further summary.
+
+  }
+}
+
+```
+
+
+
+```{R}
+library(abind)
+all.matrix<-abind(result.list,along = 3) # Covert the coefficient list to a list of matrix.
+
+apply(all.matrix, c(1,2), mean) # Get the mean of all matrices for each element.
+```
+
+
+```{R}
+hist(sacresult) # Have a look at the distribution of P value to see if such a subsample approach reduce the significance of spatial autocorrelation.
+quantile(sacresult,0.001)
+```
+
+
+
+
+
+
+
