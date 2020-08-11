@@ -1,0 +1,218 @@
+---
+title: "lmer_plotting"
+author: "Haozhi Ma"
+date: "6/9/2020"
+output: html_document
+---
+
+This script is used for plotting lmer results from different vegetation types and overall results.
+
+
+Load the file.
+
+
+```{R}
+lmer.results<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\lmer_subsampling.csv')
+head(lmer.results)
+colnames(lmer.results)
+
+```
+
+Plot the overall results regardless of vegetation types.
+
+```{R}
+overall.result<-lmer.results[lmer.results$veg.type == 'Overall',]
+library(ggplot2)
+
+```
+
+Rearrange the items.
+
+```{R}
+overall.result$Items<-factor(overall.result$Items, levels = c('Soil Sand Content','Soil Moisture','Soil Depth to Bedrock','C:N Ratio','Elevation','Tree Density','NDVI','Aridity Index','Annual Mean Temperature'))
+
+```
+
+
+
+
+```{R}
+ggplot(data = overall.result, aes(x = Items, y = Coefficients,fill = Coefficients/abs(Coefficients)))+
+  geom_bar(stat = 'identity')+
+  geom_errorbar(aes(ymin = Coefficients - 2*Standard.error, ymax = Coefficients + 2*Standard.error),width = .5,size = 1)+
+  coord_flip()+
+  theme_classic()+
+  scale_fill_gradient(low = "#2166AC", high = "#B2182B")+
+  theme(legend.position = 'none',axis.title = element_blank(),axis.text = element_text(size = 25))
+
+```
+
+```{R}
+
+
+
+```
+
+
+
+Get the forest results.
+
+```{R}
+forest.result<-lmer.results[lmer.results$veg.type == 'Forest',]
+
+```
+
+Rearrange the items.
+
+```{R}
+forest.result$Items<-factor(forest.result$Items, levels = c('Tree Density','NDVI','C:N Ratio','Soil Depth to Bedrock','Soil Sand Content','Soil Moisture','Aridity Index','Annual Mean Temperature'))
+
+```
+
+
+
+
+```{R}
+ggplot(data = forest.result, aes(x = Items, y = Coefficients,fill = Coefficients/abs(Coefficients)))+
+  geom_bar(stat = 'identity')+
+  geom_errorbar(aes(ymin = Coefficients - 2*Standard.error, ymax = Coefficients + 2*Standard.error),width = .5,size = 1)+
+  coord_flip()+
+  theme_classic()+
+  scale_fill_gradient(low = "#2166AC", high = "#B2182B")+
+  theme(legend.position = 'none',axis.title = element_blank(),axis.text = element_text(size = 25))+
+  annotate('text',x = 8, y = 0.23, label = '*',size = 10)+
+  annotate('text',x = 6, y = 0.23, label = '*',size = 10)+
+  # annotate('text',x = 3, y = 0.23, label = '*', size = 10)+
+  annotate('text',x = 5, y = 0.23, label = '*', size = 10)+
+  annotate('text',x = 4, y = 0.23, label = '*', size = 10)
+
+```
+
+```{R}
+ggplot(data = forest.result, aes(x = Items, y = Coefficients,color = Coefficients/abs(Coefficients)))+
+  geom_point(stat = 'identity',size = 6.18)+
+  geom_errorbar(aes(ymin = Coefficients - 2*Standard.error, ymax = Coefficients + 2*Standard.error),width = 0,size = 1,color = 'black')+
+  #theme_linedraw(base_family = )+
+  scale_color_gradient(low = "#2166AC", high = "#B2182B")+
+  coord_flip()+
+  theme(legend.position = 'none',axis.title = element_blank(),axis.text = element_text(size = 20),panel.background = element_rect(fill = 'white', color = 'grey50'))+
+  annotate('text',x = 8, y = 0.23, label = '*',size = 10)+
+  annotate('text',x = 6, y = 0.23, label = '*',size = 10)+
+  # annotate('text',x = 3, y = 0.23, label = '*', size = 10)+
+  annotate('text',x = 5, y = 0.23, label = '*', size = 10)+
+  annotate('text',x = 4, y = 0.23, label = '*', size = 10)+
+  geom_abline(slope = 0, intercept = 0, linetype = 'dashed',size = 1)
+
+
+
+```
+
+Get the grassland results.
+
+```{R}
+grass.result<-lmer.results[lmer.results$veg.type == 'Grassland',]
+
+```
+
+Rearrange the items.
+
+```{R}
+grass.result$Items<-factor(grass.result$Items, levels = c('Tree Density','NDVI','C:N Ratio','Soil Depth to Bedrock','Soil Sand Content','Soil Moisture','Aridity Index','Annual Mean Temperature'))
+
+```
+
+
+
+
+```{R}
+ggplot(data = grass.result, aes(x = Items, y = Coefficients,fill = Coefficients/abs(Coefficients)))+
+  geom_bar(stat = 'identity')+
+  geom_errorbar(aes(ymin = Coefficients - 2*Standard.error, ymax = Coefficients + 2*Standard.error),width = .5,size = 1)+
+  theme_classic()+
+  coord_flip()+
+  scale_fill_gradient(low = "#2166AC", high = "#B2182B")+
+  theme(legend.position = 'none',axis.title = element_blank(),axis.text = element_text(size = 25))+
+  #annotate('text',x = 8, y = 0.4, label = '*',size = 10)+
+  annotate('text',x = 8, y = 0.4, label = '*',size = 10)+
+  # annotate('text',x = 3, y = 0.23, label = '*', size = 10)+
+  annotate('text',x = 6, y = 0.4, label = '*', size = 10)+
+  #annotate('text',x = 5, y = 0.4, label = '*', size = 10)+
+  #annotate('text', x = 5, y = 0.4, label = '*', size = 10)+
+  annotate('text', x = 3, y = 0.4, label = '*', size = 10)
+  #annotate('text', x = 2, y = 0.4, label = '*', size = 10)+
+  #annotate('text',x = 1, y = 0.4, label = '*', size = 10)
+
+```
+
+```{R}
+ggplot(data = grass.result, aes(x = Items, y = Coefficients,color = Coefficients/abs(Coefficients)))+
+  geom_point(stat = 'identity',size = 6.18)+
+  geom_errorbar(aes(ymin = Coefficients - 2*Standard.error, ymax = Coefficients + 2*Standard.error),width = 0,size = 1,color = 'black')+
+  #theme_classic()+
+  scale_color_gradient(low = "#2166AC", high = "#B2182B")+
+  coord_flip()+
+  theme(legend.position = 'none',axis.title = element_blank(),axis.text = element_text(size = 20),panel.background = element_rect(fill = 'white', color = 'grey50'))+
+  annotate('text',x = 8, y = 0.23, label = '*',size = 10)+
+  # annotate('text',x = 3, y = 0.23, label = '*', size = 10)+
+  annotate('text',x = 6, y = 0.23, label = '*', size = 10)+
+  #annotate('text',x = 5, y = 0.4, label = '*', size = 10)+
+  #annotate('text', x = 5, y = 0.4, label = '*', size = 10)+
+  annotate('text', x = 3, y = 0.23, label = '*', size = 10)+
+  geom_abline(slope = 0, intercept = 0, linetype = 'dashed',size = 1)
+
+
+
+```
+
+
+
+Get the shrub results.
+
+```{R}
+shrub.result<-lmer.results[lmer.results$veg.type == 'Shrubland',]
+
+```
+
+Rearrange the items.
+
+```{R}
+shrub.result$Items<-factor(shrub.result$Items, levels = c('Tree Density','NDVI','C:N Ratio','Soil Depth to Bedrock','Soil Sand Content','Soil Moisture','Aridity Index','Annual Mean Temperature'))
+
+```
+
+
+
+
+```{R}
+ggplot(data = shrub.result, aes(x = Items, y = Coefficients,fill = Coefficients/abs(Coefficients)))+
+  geom_bar(stat = 'identity')+
+  geom_errorbar(aes(ymin = Coefficients - 2*Standard.error, ymax = Coefficients + 2*Standard.error),width = .5,size = 1)+
+  coord_flip()+
+  theme_classic()+
+  scale_fill_gradient(low = "#2166AC", high = "#B2182B")+
+  theme(legend.position = 'none',axis.title = element_blank(),axis.text = element_text(size = 25))+
+  annotate('text',x = 8, y = 0.3, label = '*',size = 10)+
+  annotate('text',x = 4, y = 0.3, label = '*',size = 10)+
+  annotate('text',x = 3, y = 0.3, label = '*', size = 10)+
+  annotate('text',x = 1, y = 0.3, label = '*', size = 10)
+ 
+
+```
+
+```{R}
+ggplot(data = shrub.result, aes(x = Items, y = Coefficients,color = Coefficients/abs(Coefficients)))+
+  geom_point(stat = 'identity',size = 6.18)+
+  geom_errorbar(aes(ymin = Coefficients - 2*Standard.error, ymax = Coefficients + 2*Standard.error),width = 0,size = 1,color = 'black')+
+  #theme_classic()+
+  scale_color_gradient(low = "#2166AC", high = "#B2182B")+
+  coord_flip()+
+  theme(legend.position = 'none',axis.title = element_blank(),axis.text = element_text(size = 20),panel.background = element_rect(fill = 'white', color = 'grey50'))+
+  annotate('text',x = 8, y = 0.3, label = '*',size = 10)+
+  annotate('text',x = 4, y = 0.3, label = '*',size = 10)+
+  annotate('text',x = 3, y = 0.3, label = '*', size = 10)+
+  annotate('text',x = 1, y = 0.3, label = '*', size = 10)+
+  geom_abline(slope = 0, intercept = 0, linetype = 'dashed',size = 1)
+
+
+
+```
