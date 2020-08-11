@@ -6,9 +6,9 @@ output: html_document
 ---
 
 
-This script is used for lmer analysis for shrubland rmfs. This approach is similar to what we did in 'alldata' subsampling analysis. The only difference happens in the random effect.
+### This script is used for lmer analysis for shrubland rmfs. This approach is similar to what we did in 'alldata' subsampling analysis. The only difference happens in the random effect.
 
-#### Load the data
+Load the data
 
 ```{R}
 shrubds<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_rsr_sample_for_grsearch_20200517.csv') # Read the data
@@ -17,11 +17,12 @@ shrubds$veg.type<-'shrub'
 names(shrubds)
 ```
 
-#### Choose the variables.
+Choose the variables.
+
 ```{R}
 var.to.choose<-c('Aridity_Index', # This one comprimises the deletion of all precipitation related variables, to make the chosen variables comprehensive.
                  #'elevation',
-'Annual_Mean_Temperature',
+                 'Annual_Mean_Temperature',
                  #'Temperature_Seasonality',
                  #'Annual_Precipitation',
                  #'Precipitation_Seasonality',
@@ -36,19 +37,21 @@ var.to.choose<-c('Aridity_Index', # This one comprimises the deletion of all pre
 
 ```
 
-#### subset the dataset
+Subset the dataset
 ```{R}
 shrubds.common.ols<-shrubds[,var.to.choose] # Sub-sample the raw data to reduce the satistical burden.
 head(shrubds.common.ols)
 
 ```
 
-#### Check the vif
+Check the vif
 ```{R}
 library(HH)
 vif(shrubds.common.ols[,c(1:8)]) # Check the variable inflation factor. Here we set the threshold is 3.
 
 ```
+RMF~Annual mean temperature
+Also check the SAC from residuals of the regression model.
 
 ```{R}
 rmfls<-lm(scale(rmf)~scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = shrubds) # Linear model is set.
@@ -63,7 +66,8 @@ varls<-lm(scale(Annual_Mean_Temperature)~scale(Tree_Density)+scale(NDVI)+scale(c
   moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
   moran.result
 ```
-
+RMF~Tree density
+Also check the SAC from residuals of the regression model.
 
 ```{R}
 rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = shrubds) # Linear model is set.
@@ -78,6 +82,10 @@ varls<-lm(scale(Tree_Density)~scale(Annual_Mean_Temperature)+scale(NDVI)+scale(c
   moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
   moran.result
 ```
+
+RMF~NDVI
+Also check the SAC from residuals of the regression model.
+
 ```{R}
 rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = shrubds) # Linear model is set.
 varls<-lm(scale(NDVI)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = shrubds)
@@ -91,6 +99,8 @@ varls<-lm(scale(NDVI)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(c
   moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
   moran.result
 ```
+RMF~Soil C:N ratio
+Also check the SAC from residuals of the regression model.
 
 ```{R}
 rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = shrubds) # Linear model is set.
@@ -105,6 +115,10 @@ varls<-lm(scale(cnratio)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scal
   moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
   moran.result
 ```
+
+RMF~Aridity index
+Also check the SAC from residuals of the regression model.
+
 ```{R}
 rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = shrubds) # Linear model is set.
 varls<-lm(scale(Aridity_Index)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = shrubds)
@@ -119,6 +133,9 @@ varls<-lm(scale(Aridity_Index)~scale(Annual_Mean_Temperature)+scale(Tree_Density
   moran.result
 ```
 
+RMF~Soil moisture
+Also check the SAC from residuals of the regression model.
+
 ```{R}
 rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = shrubds) # Linear model is set.
 varls<-lm(scale(soil_moisture)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = shrubds)
@@ -132,6 +149,10 @@ varls<-lm(scale(soil_moisture)~scale(Annual_Mean_Temperature)+scale(Tree_Density
   moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
   moran.result
 ```
+
+RMF~Soil sand content
+Also check the SAC from residuals of the regression model.
+
 ```{R}
 rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Depth_to_Bedrock),data = shrubds) # Linear model is set.
 varls<-lm(scale(Sand_Content_15cm)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Depth_to_Bedrock),data = shrubds)
@@ -145,19 +166,11 @@ varls<-lm(scale(Sand_Content_15cm)~scale(Annual_Mean_Temperature)+scale(Tree_Den
   moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
   moran.result
 ```
-```{R}
-rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = shrubds) # Linear model is set.
-varls<-lm(scale(elevation)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(Depth_to_Bedrock),data = shrubds)
-  common.ols<-lm(resid(rmfls)~resid(varls))
-  summary(common.ols)
-  
-  coords<-cbind(shrubds$longitude, shrubds$latitude) # Set coordinates.
-  corrds<-as.matrix(coords)
-  nb1.5<-dnearneigh(coords,0,4,longlat = TRUE) # Set distance class.
-  nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
-  moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
-  moran.result
-```
+
+
+RMF~Soil depth to bedrock
+Also check the SAC from residuals of the regression model.
+
 ```{R}
 rmfls<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm),data = shrubds) # Linear model is set.
 varls<-lm(scale(Depth_to_Bedrock)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm),data = shrubds)
@@ -173,73 +186,3 @@ varls<-lm(scale(Depth_to_Bedrock)~scale(Annual_Mean_Temperature)+scale(Tree_Dens
 ```
 
 
-```{R}
-coords<-cbind(shrubds$longitude, shrubds$latitude) # Set coordinates.
-  corrds<-as.matrix(coords)
-  nb1.5<-dnearneigh(coords,0,4,longlat = TRUE) # Set distance class.
-  nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
-  moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
-  moran.result
-
-```
-
-
-#### Istantiate bootstrapping
-
-```{R}
-B <- 1000
-result.list<-vector('list',B)
-#print(result.list)
-sacresult<-vector('numeric',B) # Sar model p value
-```
-
-
-
-
-
-
-#### Instantiate a loop to randomly subsample the sample.
-
-```{R}
-set.seed(10) # Set the random starting point.
-
-
-
-
-for(i in 1:B){ # Loop to get the result of each replicate
-  if(i%%100 == 0){
-    print(i) # Show how far we are.
-  }
-  rows<-sample(1:nrow(shrubds),300,replace = TRUE) # Randomly choose row names.
-  
-  subds<-shrubds[rows,] # Choose the rows.
-  common.ols<-lm(scale(rmf)~scale(Annual_Mean_Temperature)+scale(Tree_Density)+scale(NDVI)+scale(cnratio)+scale(Aridity_Index)+scale(soil_moisture)+scale(Sand_Content_15cm)+scale(elevation)+scale(Depth_to_Bedrock),data = subds) # Linear model is set.
-
-  sum.ols<-summary(common.ols)
-  result.list[[i]]<-sum.ols$coefficients # The data table of coefficients will be saved in a list of dataframes for further summary.
-  ## Check SAC
-  coords<-cbind(subds$longitude, subds$latitude) # Set coordinates.
-  corrds<-as.matrix(coords)
-  nb1.5<-dnearneigh(coords,0,4,longlat = TRUE) # Set distance class.
-  nb1.5.w<-nb2listw(nb1.5, glist = NULL, style = 'W', zero.policy = TRUE)
-  moran.result<-moran.test(resid(common.ols), nb1.5.w, zero.policy = TRUE)
-
-  sacresult[i]<-moran.result$p.value # The P value shows if the SAC is significantly high. This value is stored in a vector to get the distribution of all P values and have a look at the 0.1% quantile.
-  
-}
-
-```
-
-
-```{R}
-library(abind)
-all.matrix<-abind(result.list,along = 3) # Covert the coefficient list to a list of matrix.
-
-apply(all.matrix, c(1,2), mean) # Get the mean of all matrices for each element.
-```
-
-
-```{R}
-hist(sacresult) # Have a look at the distribution of P value to see if such a subsample approach reduce the significance of spatial autocorrelation.
-quantile(sacresult,0.001)
-```
