@@ -5,7 +5,7 @@ date: "6/9/2020"
 output: html_document
 ---
 
-This script is used for plotting lmer results from different vegetation types and overall results.
+### This script is used for plotting lmer results from different vegetation types and overall results.
 
 
 Load the file.
@@ -13,46 +13,11 @@ Load the file.
 
 ```{R}
 lmer.results<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\lmer_subsampling.csv')
+# Get a glance of data structure.
 head(lmer.results)
 colnames(lmer.results)
 
 ```
-
-Plot the overall results regardless of vegetation types.
-
-```{R}
-overall.result<-lmer.results[lmer.results$veg.type == 'Overall',]
-library(ggplot2)
-
-```
-
-Rearrange the items.
-
-```{R}
-overall.result$Items<-factor(overall.result$Items, levels = c('Soil Sand Content','Soil Moisture','Soil Depth to Bedrock','C:N Ratio','Elevation','Tree Density','NDVI','Aridity Index','Annual Mean Temperature'))
-
-```
-
-
-
-
-```{R}
-ggplot(data = overall.result, aes(x = Items, y = Coefficients,fill = Coefficients/abs(Coefficients)))+
-  geom_bar(stat = 'identity')+
-  geom_errorbar(aes(ymin = Coefficients - 2*Standard.error, ymax = Coefficients + 2*Standard.error),width = .5,size = 1)+
-  coord_flip()+
-  theme_classic()+
-  scale_fill_gradient(low = "#2166AC", high = "#B2182B")+
-  theme(legend.position = 'none',axis.title = element_blank(),axis.text = element_text(size = 25))
-
-```
-
-```{R}
-
-
-
-```
-
 
 
 Get the forest results.
@@ -69,24 +34,10 @@ forest.result$Items<-factor(forest.result$Items, levels = c('Tree Density','NDVI
 
 ```
 
+Plotting.
 
 
 
-```{R}
-ggplot(data = forest.result, aes(x = Items, y = Coefficients,fill = Coefficients/abs(Coefficients)))+
-  geom_bar(stat = 'identity')+
-  geom_errorbar(aes(ymin = Coefficients - 2*Standard.error, ymax = Coefficients + 2*Standard.error),width = .5,size = 1)+
-  coord_flip()+
-  theme_classic()+
-  scale_fill_gradient(low = "#2166AC", high = "#B2182B")+
-  theme(legend.position = 'none',axis.title = element_blank(),axis.text = element_text(size = 25))+
-  annotate('text',x = 8, y = 0.23, label = '*',size = 10)+
-  annotate('text',x = 6, y = 0.23, label = '*',size = 10)+
-  # annotate('text',x = 3, y = 0.23, label = '*', size = 10)+
-  annotate('text',x = 5, y = 0.23, label = '*', size = 10)+
-  annotate('text',x = 4, y = 0.23, label = '*', size = 10)
-
-```
 
 ```{R}
 ggplot(data = forest.result, aes(x = Items, y = Coefficients,color = Coefficients/abs(Coefficients)))+
@@ -122,27 +73,7 @@ grass.result$Items<-factor(grass.result$Items, levels = c('Tree Density','NDVI',
 ```
 
 
-
-
-```{R}
-ggplot(data = grass.result, aes(x = Items, y = Coefficients,fill = Coefficients/abs(Coefficients)))+
-  geom_bar(stat = 'identity')+
-  geom_errorbar(aes(ymin = Coefficients - 2*Standard.error, ymax = Coefficients + 2*Standard.error),width = .5,size = 1)+
-  theme_classic()+
-  coord_flip()+
-  scale_fill_gradient(low = "#2166AC", high = "#B2182B")+
-  theme(legend.position = 'none',axis.title = element_blank(),axis.text = element_text(size = 25))+
-  #annotate('text',x = 8, y = 0.4, label = '*',size = 10)+
-  annotate('text',x = 8, y = 0.4, label = '*',size = 10)+
-  # annotate('text',x = 3, y = 0.23, label = '*', size = 10)+
-  annotate('text',x = 6, y = 0.4, label = '*', size = 10)+
-  #annotate('text',x = 5, y = 0.4, label = '*', size = 10)+
-  #annotate('text', x = 5, y = 0.4, label = '*', size = 10)+
-  annotate('text', x = 3, y = 0.4, label = '*', size = 10)
-  #annotate('text', x = 2, y = 0.4, label = '*', size = 10)+
-  #annotate('text',x = 1, y = 0.4, label = '*', size = 10)
-
-```
+Plotting.
 
 ```{R}
 ggplot(data = grass.result, aes(x = Items, y = Coefficients,color = Coefficients/abs(Coefficients)))+
@@ -181,23 +112,7 @@ shrub.result$Items<-factor(shrub.result$Items, levels = c('Tree Density','NDVI',
 ```
 
 
-
-
-```{R}
-ggplot(data = shrub.result, aes(x = Items, y = Coefficients,fill = Coefficients/abs(Coefficients)))+
-  geom_bar(stat = 'identity')+
-  geom_errorbar(aes(ymin = Coefficients - 2*Standard.error, ymax = Coefficients + 2*Standard.error),width = .5,size = 1)+
-  coord_flip()+
-  theme_classic()+
-  scale_fill_gradient(low = "#2166AC", high = "#B2182B")+
-  theme(legend.position = 'none',axis.title = element_blank(),axis.text = element_text(size = 25))+
-  annotate('text',x = 8, y = 0.3, label = '*',size = 10)+
-  annotate('text',x = 4, y = 0.3, label = '*',size = 10)+
-  annotate('text',x = 3, y = 0.3, label = '*', size = 10)+
-  annotate('text',x = 1, y = 0.3, label = '*', size = 10)
- 
-
-```
+Plotting.
 
 ```{R}
 ggplot(data = shrub.result, aes(x = Items, y = Coefficients,color = Coefficients/abs(Coefficients)))+
