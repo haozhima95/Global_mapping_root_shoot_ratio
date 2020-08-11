@@ -5,7 +5,7 @@ date: "7/8/2020"
 output: html_document
 ---
 
-This script is used for data play with sampled RMF and most important variables. 
+### This script is used for data play with sampled RMF and most important variables. 
 
 Load the data and have a look at histograms
 
@@ -14,40 +14,6 @@ Load the data and have a look at histograms
 forestrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_rsr_sample_for_grsearch_20200517.csv')
 names(forestrmf)
 ```
-
-Make the histogram of annual mean temp.
-
-```{R}
-library(ggplot2)
-
-ggplot(forestrmf, aes(x = Annual_Mean_Temperature))+
-  geom_histogram()
-median(forestrmf$Annual_Mean_Temperature)
-ggplot(forestrmf, aes(x = soil_moisture))+
-  geom_histogram()
-median(forestrmf$soil_moisture)
-
-
-ggplot(forestrmf, aes(x = Sand_Content_15cm))+
-  geom_histogram()
-median(forestrmf$Sand_Content_15cm)
-
-
-ggplot(forestrmf, aes(x = Depth_to_Bedrock))+
-  geom_histogram()
-median(forestrmf$Depth_to_Bedrock)
-```
-
-```{R}
-ggplot(data = forestrmf, aes(x = Annual_Mean_Temperature, y = cnratio))+
-  geom_point()+
-  geom_smooth(method = 'lm', formula = 'y~x')
-
-
-```
-
-
-
 
 
 play with temp
@@ -69,13 +35,6 @@ foresttemp<-rbind(lowerthannten,rbind(ntentozero,rbind(zerototen,rbind(tentotwen
 
 ```
 
-
-```{R}
-ggplot(data = foresttemp[foresttemp$soil_moisture<800,], aes(x = cate, y = rmf))+
-  geom_boxplot()
-
-
-```
 
 ```{R}
 ggplot(data = foresttemp[foresttemp$soil_moisture>=700,], aes(x = Annual_Mean_Temperature, y = rmf))+
@@ -116,8 +75,8 @@ summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid6))
 newdata<-rbind(humid1,rbind(humid2,rbind(humid3,rbind(humid4,rbind(humid5,humid6)))))
 
 name<-c('Less than 600', '600 to 700', '700 to 800', '800 to 850', '850 to 900', 'Higher than 900')
-effect<-c(0.3991, 0.1805, -0.06237, -0.1901, -0.2722, -0.2322)
-se<-c(0.07271, 0.05507, 0.03114, 0.03076, 0.0209, 0.04882)
+effect<-c(0.3991, 0.1805, -0.06237, -0.1901, -0.2722, -0.2322) # These values are obtaied from above 'summary' functions. 'Estimate's on the second row are selected.
+se<-c(0.07271, 0.05507, 0.03114, 0.03076, 0.0209, 0.04882) # Similar to the above-mentioned, 'Standard Error's on the second row are chosen as se. 
 group<-c(1,1,1,1,1,1)
 boxdata<-cbind(name,cbind(effect, se))
 boxdata<-as.data.frame(boxdata)
@@ -136,7 +95,7 @@ p1<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect))
   theme_classic()+
   geom_abline(slope = 0, intercept = 0,linetype = 'dashed')+
   labs(x = 'Moisture class (%)', y = 'Effect')+
-  theme(legend.position = 'none', axis.title = element_text(size = 20), axis.text.x = element_text(size = 20, angle = 45, hjust = 1, color = 'black'), axis.text.y = element_text(size = 20, color = 'black'))
+  theme(legend.position = 'none', axis.title = element_text(size = 20), axis.text.x = element_text(size = 20, angle = 45, hjust = 1, color = 'black'), axis.text.y = element_text(size = 20, color = 'black')) # Save this plot to a vector for futher arrangement.
 ```
 
 
@@ -150,7 +109,7 @@ p1<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect))
 
 
 
-
+Set temperature classes and regression with soil moisture.
 
 
 
@@ -199,6 +158,8 @@ boxdata$group<-group
 
 boxdata$name<-factor(boxdata$name, levels = c('Less than 0', '0 to 5','5 to 10', '10 to 15', 'Higher than 15'))
 
+
+# Save this plot for further arrangement.
 p2<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
   geom_line(aes(group = group, color = effect/effect),size = 1)+
   geom_point(stat = 'identity',size = 6.18)+
@@ -220,7 +181,7 @@ p2<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect))
 
 
 
-
+Detailed plot showing how rmf change with different temperature and soil moistures.
 
 
 
@@ -341,7 +302,7 @@ p3<-ggplot(newdata,aes(x = moistclass, y = rmf,color = cate))+
 
 
 
-
+Another possible version...
 
 
 
@@ -418,6 +379,11 @@ ggplot(newdata,aes(x = temp, y = rmf,color = cate))+
 
 ```
 
+
+
+How rmf go with sand content in different temperature scenarios. We did not show below in the text but worthy trying here.
+
+
 ```{R}
 ### Cold and dry
 library(ggplot2)
@@ -461,6 +427,8 @@ hotandhumid$cate<-'High temp & high moist'
 
 ```
 
+Plotting a rough result.
+
 ```{R}
 newdata<-rbind(coldanddry,rbind(hotanddry,rbind(coldandhumid,hotandhumid)))
 
@@ -470,7 +438,7 @@ ggplot(data = newdata, aes(x = Sand_Content_15cm, y = rmf, color = cate))+
 
 ```
 
-
+rmf~ Soil depth to bedrock with different classes of temperature and soil moisture.
 
 
 ```{R}
@@ -506,34 +474,7 @@ summary(lm(rmf~Depth_to_Bedrock,data = foresttemp[foresttemp$soil_moisture>=800&
 
 ```
 
-
-```{R}
-library(rpart)
-library(party)
-library(partykit)
-```
-
-
-```{R}
-
-# Creating formula
-
-formula.forest<-as.formula('rmf~Annual_Mean_Temperature+soil_moisture+Sand_Content_15cm+Depth_to_Bedrock')
-
-rpart.forest<-rpart(formula.forest, data = forestrmf, control = c(minsplit = 100, minbucket = 300, cp = 0.01))
-
-summary(rpart.forest)
-
-
-```
-
-```{R}
-plot(as.party(rpart.forest),type="extended", digits=4)
-
-
-```
-
-
+For grassland similar approches.
 
 
 ```{R}
@@ -541,75 +482,7 @@ grassrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_rsr_s
 names(grassrmf)
 ```
 
-```{R}
-ggplot(grassrmf[grassrmf$cnratio>0,], aes(x = Annual_Mean_Temperature, y = cnratio))+
-  geom_point()+
-  geom_smooth(method = 'loess')
-
-```
-
-
-
-
-```{R}
-
-# Creating formula
-
-formula.grass<-as.formula('rmf~Annual_Mean_Temperature+soil_moisture')
-
-rpart.grass<-rpart(formula.grass, data = grassrmf, control = c(minsplit = 50, minbucket = 100, cp = 0.01))
-
-summary(rpart.grass)
-
-
-```
-
-```{R}
-plot(as.party(rpart.grass),type="extended", digits=4)
-
-
-```
-
-Do the point partition in forest  by biomes
-
-```{R}
-tropicallist<-c(1,2,3)
-temperatelist<-c(4,5,8)
-
-boreallist<-c(6)
-
-
-```
-
-
-```{R}
-tropicalrmf<-read.csv(paste0('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\regional_points_biome_',1,'.csv'))
-for(i in 2:(length(tropicallist))){
-  addon<-read.csv(paste0('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\regional_points_biome_',tropicallist[i],'.csv'))
-  tropicalrmf<-rbind(tropicalrmf,addon)
-}
-print(paste0('Tropical','___',NROW(tropicalrmf)))
-tropicalrmf$biometype<-'tropical'
-
-temperatermf<-read.csv(paste0('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\regional_points_biome_',4,'.csv'))
-for(i in 2:(length(temperatelist))){
-  tempaddon<-read.csv(paste0('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\regional_points_biome_',temperatelist[i],'.csv'))
-  temperatermf<-rbind(temperatermf,tempaddon)
-}
-print(paste0('Temperate','___',NROW(temperatermf)))
-temperatermf$biometype<-'temperate'
-
-borealrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\regional_points_biome_6.csv')
-borealrmf$biometype<-'boreal'
-
-```
-
-
-
-
-
-
-
+Check how grass rmf change with temperature in different humidities.
 
 ```{R}
 
@@ -654,6 +527,7 @@ boxdata$effect<-effect
 boxdata$se<-se
 boxdata$name<-factor(boxdata$name, levels = name)
 boxdata$group<-group
+# Save this plot for further arrangements.
 p4<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
   geom_line(aes(group = group, color = effect/effect),size = 1)+
   geom_point(stat = 'identity',size = 6.18)+
@@ -731,7 +605,7 @@ ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
 
 
 
-
+See how rmf change with soil moisture in differnt temperatures.
 
 ```{R}
 
@@ -791,6 +665,7 @@ p5<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect))
 ```
 
 
+See in detail how grass rmf change with soil C:N ratio in different temperatures.
 
 ```{R}
 
@@ -840,27 +715,7 @@ ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
 
 
 
-
-
-
-
-
-
-
-
-```{R}
-ggplot(data = grassrmf, aes(x = soil_moisture))+
-  geom_histogram()
-quantile(grassrmf$soil_moisture,0.5)
-
-
-ggplot(data = grassrmf, aes(x = Annual_Mean_Temperature))+
-  geom_histogram()
-median(grassrmf$Annual_Mean_Temperature)
-quantile(grassrmf$Annual_Mean_Temperature, 0.1)
-quantile(grassrmf$Annual_Mean_Temperature, 0.9)
-```
-
+The effect of soil moisture in different temperature scenarios.
 
 
 ```{R}
@@ -964,14 +819,7 @@ ggplot(newdata,aes(x = moistclass, y = rmf,color = cate))+
   stat_summary(fun = mean, geom = 'line', size = 1, aes(group = cate))
 ```
 
-```{R}
-quantile(grassrmf$Annual_Mean_Temperature, 0.25)
-quantile(grassrmf$Annual_Mean_Temperature, 0.75)
-
-```
-
-
-
+Detailed plot of effect of temperatue and soil moisture on rmfs in grasslands.
 ```{R}
 
 temp1<-(-5)
@@ -1114,7 +962,7 @@ ggplot(newdata,aes(x = moistclass, y = rmf,color = cate))+
 ```
 
 
-
+Another version. After comparision we used the below one.
 
 
 ```{R}
@@ -1281,28 +1129,16 @@ p6<-ggplot(newdata,aes(x = temp, y = rmf,color = cate))+
 
 
 
+Load the shrubland dataset.
+
+
+
 ```{R}
 shrubrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_rsr_sample_for_grsearch_20200517.csv')
 names(shrubrmf)
 ```
 
-```{R}
-ggplot(shrubrmf, aes(x = Annual_Mean_Temperature))+
-  geom_histogram()
-median(shrubrmf$Annual_Mean_Temperature)
-ggplot(shrubrmf, aes(x = soil_moisture))+
-  geom_histogram()
-median(shrubrmf$soil_moisture)
-```
-
-
-```{R}
-quantile(shrubrmf$soil_moisture, 0.25)
-quantile(shrubrmf$soil_moisture, 0.75)
-
-```
-
-
+Check how rmf change with annual mean temperature in different moist classes.
 
 ```{R}
 moist1<-500
@@ -1379,18 +1215,7 @@ ggplot(newdata,aes(x = temp, y = rmf,color = cate))+
 ```
 
 
-```{R}
-quantile(shrubrmf$Annual_Mean_Temperature,0.25)
-quantile(shrubrmf$Annual_Mean_Temperature,0.75)
-
-median(shrubrmf$Annual_Mean_Temperature)
-mean(shrubrmf$Annual_Mean_Temperature)
-```
-
-
-
-
-
+How rmf change with soil moisture in different temperature scenarios.
 
 
 ```{R}
@@ -1502,7 +1327,7 @@ p9<-ggplot(newdata,aes(x = moistclass, y = rmf,color = cate))+
         legend.title = element_blank(), legend.text = element_text(size = 20))
 ```
 
-
+Another version of how temperature effect change with soil moisture.
 
 ```{R}
 
@@ -1556,7 +1381,7 @@ p7<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect))
 ```
 
 
-
+Detailed pattern in shrubland that rmf change with temperature and soil moisture.
 
 ```{R}
 
@@ -1716,7 +1541,7 @@ ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
   scale_color_gradient(low = "#2166AC", high = "#B2182B")
 ```
 
-
+Arrange the panels.
 ```{R}
 library(ggpubr)
 
@@ -1727,6 +1552,8 @@ ggarrange(p1,p7,p4,
         nrow = 3)
 ```
 
+
+Check the complex feedback with different variables.
 
 ```{R}
 library(ggparty)
