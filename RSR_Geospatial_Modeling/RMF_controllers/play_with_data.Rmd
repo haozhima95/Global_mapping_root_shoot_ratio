@@ -1,0 +1,2045 @@
+---
+title: "play_with_forest_sample"
+author: "Haozhi Ma"
+date: "7/8/2020"
+output: html_document
+---
+
+This script is used for data play with sampled RMF and most important variables. 
+
+Load the data and have a look at histograms
+
+
+```{R}
+forestrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_rsr_sample_for_grsearch_20200517.csv')
+names(forestrmf)
+```
+
+Make the histogram of annual mean temp.
+
+```{R}
+library(ggplot2)
+
+ggplot(forestrmf, aes(x = Annual_Mean_Temperature))+
+  geom_histogram()
+median(forestrmf$Annual_Mean_Temperature)
+ggplot(forestrmf, aes(x = soil_moisture))+
+  geom_histogram()
+median(forestrmf$soil_moisture)
+
+
+ggplot(forestrmf, aes(x = Sand_Content_15cm))+
+  geom_histogram()
+median(forestrmf$Sand_Content_15cm)
+
+
+ggplot(forestrmf, aes(x = Depth_to_Bedrock))+
+  geom_histogram()
+median(forestrmf$Depth_to_Bedrock)
+```
+
+```{R}
+ggplot(data = forestrmf, aes(x = Annual_Mean_Temperature, y = cnratio))+
+  geom_point()+
+  geom_smooth(method = 'lm', formula = 'y~x')
+
+
+```
+
+
+
+
+
+play with temp
+
+```{R}
+foresttemp<-forestrmf[,c('soil_moisture','Annual_Mean_Temperature','Sand_Content_15cm','Depth_to_Bedrock','rmf')]
+lowerthannten<-foresttemp[foresttemp$Annual_Mean_Temperature<(-10),]
+lowerthannten$cate<-'Lower than -10'
+ntentozero<-foresttemp[foresttemp$Annual_Mean_Temperature>=-10&foresttemp$Annual_Mean_Temperature<0,]
+ntentozero$cate<-'-10 to 0'
+zerototen<-foresttemp[foresttemp$Annual_Mean_Temperature>=0&foresttemp$Annual_Mean_Temperature<10,]
+zerototen$cate<-'0 to 10'
+tentotwenty<-foresttemp[foresttemp$Annual_Mean_Temperature>=10&foresttemp$Annual_Mean_Temperature<20,]
+tentotwenty$cate<-'10 to 20'
+morethantwenty<-foresttemp[foresttemp$Annual_Mean_Temperature>=20,]
+morethantwenty$cate<-'Higher than 20'
+
+foresttemp<-rbind(lowerthannten,rbind(ntentozero,rbind(zerototen,rbind(tentotwenty,morethantwenty))))
+
+```
+
+
+```{R}
+ggplot(data = foresttemp[foresttemp$soil_moisture<800,], aes(x = cate, y = rmf))+
+  geom_boxplot()
+
+
+```
+
+```{R}
+ggplot(data = foresttemp[foresttemp$soil_moisture>=700,], aes(x = Annual_Mean_Temperature, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = foresttemp[foresttemp$soil_moisture>=700,]))
+
+humid1<-foresttemp[foresttemp$soil_moisture<600,]
+humid1$cate<-'Less than 600'
+
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid1))
+
+humid2<-foresttemp[foresttemp$soil_moisture>=600&foresttemp$soil_moisture<700,]
+humid2$cate<-'600 to 700'
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid2))
+
+
+humid3<-foresttemp[foresttemp$soil_moisture>=700&foresttemp$soil_moisture<800,]
+humid3$cate<-'700 to 800'
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid3))
+
+
+humid4<-foresttemp[foresttemp$soil_moisture>=800&foresttemp$soil_moisture<850,]
+humid4$cate<-'800 to 850'
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid4))
+
+humid5<-foresttemp[foresttemp$soil_moisture>=850&foresttemp$soil_moisture<900,]
+humid5$cate<-'850 to 900'
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid5))
+
+
+humid6<-foresttemp[foresttemp$soil_moisture>=900,]
+humid6$cate<-'Higher than 900'
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid6))
+
+
+newdata<-rbind(humid1,rbind(humid2,rbind(humid3,rbind(humid4,rbind(humid5,humid6)))))
+
+name<-c('Less than 600', '600 to 700', '700 to 800', '800 to 850', '850 to 900', 'Higher than 900')
+effect<-c(0.3991, 0.1805, -0.06237, -0.1901, -0.2722, -0.2322)
+se<-c(0.07271, 0.05507, 0.03114, 0.03076, 0.0209, 0.04882)
+group<-c(1,1,1,1,1,1)
+boxdata<-cbind(name,cbind(effect, se))
+boxdata<-as.data.frame(boxdata)
+boxdata$effect<-effect
+boxdata$se<-se
+boxdata$group<-group
+
+boxdata$name<-factor(boxdata$name, levels = c('Less than 600', '600 to 700', '700 to 800', '800 to 850', '850 to 900', 'Higher than 900'))
+
+p1<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
+  geom_line(aes(group = group, color = effect/effect),size = 1)+
+  geom_point(size = 6.18)+
+  geom_errorbar(aes(ymin = effect - 2*se, ymax = effect + 2*se),width = 0,size = 1,color = 'black')+
+  #theme_classic()+
+  scale_color_gradient(low = "#2166AC", high = "#B2182B")+
+  theme_classic()+
+  geom_abline(slope = 0, intercept = 0,linetype = 'dashed')+
+  labs(x = 'Moisture class (%)', y = 'Effect')+
+  theme(legend.position = 'none', axis.title = element_text(size = 20), axis.text.x = element_text(size = 20, angle = 45, hjust = 1, color = 'black'), axis.text.y = element_text(size = 20, color = 'black'))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{R}
+
+temp1<-foresttemp[foresttemp$Annual_Mean_Temperature<(0),]
+temp1$cate<-'Less than 0'
+
+summary(lm(scale(rmf)~scale(soil_moisture),data = temp1))
+
+temp2<-foresttemp[foresttemp$Annual_Mean_Temperature>=0&foresttemp$Annual_Mean_Temperature<5,]
+temp2$cate<-'0 to 5'
+summary(lm(scale(rmf)~scale(soil_moisture),data = temp2))
+
+
+temp3<-foresttemp[foresttemp$Annual_Mean_Temperature>=5&foresttemp$Annual_Mean_Temperature<10,]
+temp3$cate<-'5 to 10'
+summary(lm(scale(rmf)~scale(soil_moisture),data = temp3))
+
+
+temp4<-foresttemp[foresttemp$Annual_Mean_Temperature>=10&foresttemp$Annual_Mean_Temperature<15,]
+temp4$cate<-'10 to 15'
+summary(lm(scale(rmf)~scale(soil_moisture),data = temp4))
+
+temp5<-foresttemp[foresttemp$Annual_Mean_Temperature>=15,]
+temp5$cate<-'Higher than 15'
+summary(lm(scale(rmf)~scale(soil_moisture),data = temp5))
+
+
+
+
+#newdata<-rbind(humid1,rbind(humid2,rbind(humid3,rbind(humid4,rbind(humid5,humid6)))))
+
+
+name<-c('Less than 0', '0 to 5', '5 to 10', '10 to 15', 'Higher than 15')
+effect<-c(0.1005, 0.001435, -0.04169, -0.01312, -0.4872)
+se<-c(0.0277, 0.02972, 0.03195, 0.04271, 0.0264)
+group<-c(1,1,1,1,1)
+boxdata<-cbind(name,cbind(effect, se))
+boxdata<-as.data.frame(boxdata)
+boxdata$effect<-effect
+boxdata$se<-se
+boxdata$group<-group
+
+boxdata$name<-factor(boxdata$name, levels = c('Less than 0', '0 to 5','5 to 10', '10 to 15', 'Higher than 15'))
+
+p2<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
+  geom_line(aes(group = group, color = effect/effect),size = 1)+
+  geom_point(stat = 'identity',size = 6.18)+
+  geom_errorbar(aes(ymin = effect - 2*se, ymax = effect + 2*se),width = 0,size = 1,color = 'black')+
+  #theme_classic()+
+  scale_color_gradient(low = "#2166AC", high = "#B2182B")+
+  theme_classic()+
+  geom_abline(slope = 0, intercept = 0,linetype = 'dashed')+
+  labs(x = 'Temperature class (\u00B0C)', y = 'Effect')+
+  theme(legend.position = 'none', axis.title = element_text(size = 20), axis.text.x = element_text(size = 20, angle = 45, hjust = 1, colour = 'black'), axis.text.y = element_text(size = 20, colour = 'black'))
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{R}
+
+temp<-8
+ggplot(data = foresttemp[foresttemp$Annual_Mean_Temperature<temp,], aes(x = soil_moisture, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+cold<-foresttemp[foresttemp$Annual_Mean_Temperature<temp,]
+cold$cate<-'<8 \u00B0C'
+summary(lm(rmf~soil_moisture,data = foresttemp[foresttemp$Annual_Mean_Temperature<temp,]))
+
+ggplot(data = foresttemp[foresttemp$Annual_Mean_Temperature>=temp,], aes(x = soil_moisture, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~soil_moisture,data = foresttemp[foresttemp$Annual_Mean_Temperature>=temp,]))
+
+hot<-foresttemp[foresttemp$Annual_Mean_Temperature>=temp,]
+hot$cate<-'\u22658 \u00B0C'
+
+coldmoistclass1<-cold[cold$soil_moisture<500, ]
+coldmoistclass1$moistclass<-'Less than 500'
+
+coldmoistclass2<-cold[cold$soil_moisture>=500&cold$soil_moisture<550,]
+coldmoistclass2$moistclass<-'500 to 600'
+
+coldmoistclass3<-cold[cold$soil_moisture>=550&cold$soil_moisture<600,]
+coldmoistclass3$moistclass<-'500 to 600'
+
+coldmoistclass4<-cold[cold$soil_moisture>=600&cold$soil_moisture<650,]
+coldmoistclass4$moistclass<-'600 to 700'
+
+coldmoistclass5<-cold[cold$soil_moisture>=650&cold$soil_moisture<700,]
+coldmoistclass5$moistclass<-'600 to 700'
+
+coldmoistclass6<-cold[cold$soil_moisture>=700&cold$soil_moisture<750,]
+coldmoistclass6$moistclass<-'700 to 800'
+
+coldmoistclass7<-cold[cold$soil_moisture>=750&cold$soil_moisture<800,]
+coldmoistclass7$moistclass<-'700 to 800'
+
+coldmoistclass8<-cold[cold$soil_moisture>=800&cold$soil_moisture<850,]
+coldmoistclass8$moistclass<-'Higher than 800'
+
+coldmoistclass9<-cold[cold$soil_moisture>=850&cold$soil_moisture<900,]
+coldmoistclass9$moistclass<-'Higher than 800'
+
+coldmoistclass10<-cold[cold$soil_moisture>=900,]
+coldmoistclass10$moistclass<-'Higher than 800'
+
+
+
+cold<-rbind(coldmoistclass1,rbind(coldmoistclass2,rbind(coldmoistclass3,rbind(coldmoistclass4,rbind(coldmoistclass5,rbind(coldmoistclass6,rbind(coldmoistclass7,rbind(coldmoistclass8,rbind(coldmoistclass9,coldmoistclass10)))))))))
+
+
+
+hotmoistclass1<-hot[hot$soil_moisture<500, ]
+hotmoistclass1$moistclass<-'Less than 500'
+
+hotmoistclass2<-hot[hot$soil_moisture>=500&hot$soil_moisture<550,]
+hotmoistclass2$moistclass<-'500 to 600'
+
+hotmoistclass3<-hot[hot$soil_moisture>=550&hot$soil_moisture<600,]
+hotmoistclass3$moistclass<-'500 to 600'
+
+hotmoistclass4<-hot[hot$soil_moisture>=600&hot$soil_moisture<650,]
+hotmoistclass4$moistclass<-'600 to 700'
+
+hotmoistclass5<-hot[hot$soil_moisture>=650&hot$soil_moisture<700,]
+hotmoistclass5$moistclass<-'600 to 700'
+
+hotmoistclass6<-hot[hot$soil_moisture>=700&hot$soil_moisture<750,]
+hotmoistclass6$moistclass<-'700 to 800'
+
+hotmoistclass7<-hot[hot$soil_moisture>=750&hot$soil_moisture<800,]
+hotmoistclass7$moistclass<-'700 to 800'
+
+hotmoistclass8<-hot[hot$soil_moisture>=800&hot$soil_moisture<850,]
+hotmoistclass8$moistclass<-'Higher than 800'
+
+hotmoistclass9<-hot[hot$soil_moisture>=850&hot$soil_moisture<900,]
+hotmoistclass9$moistclass<-'Higher than 800'
+
+hotmoistclass10<-hot[hot$soil_moisture>=900,]
+hotmoistclass10$moistclass<-'Higher than 800'
+
+hot<-rbind(hotmoistclass1,rbind(hotmoistclass2,rbind(hotmoistclass3,rbind(hotmoistclass4,rbind(hotmoistclass5,rbind(hotmoistclass6,rbind(hotmoistclass7,rbind(hotmoistclass8,rbind(hotmoistclass9,hotmoistclass10)))))))))
+
+
+
+
+newdata<-rbind(cold,hot)
+
+
+newdata$moistclass<-factor(newdata$moistclass, levels = c('Less than 500', '500 to 600','600 to 700', '700 to 800', 'Higher than 800'))
+p3<-ggplot(newdata,aes(x = moistclass, y = rmf,color = cate))+
+  #geom_point(alpha = 0.2)+
+  stat_summary(fun.data = 'mean_cl_boot' ,size = 1)+
+  stat_summary(fun = mean, geom = 'line', size = 1, aes(group = cate))+
+  theme_classic()+
+  geom_abline(slope = 0, intercept = 0,linetype = 'dashed')+
+  labs(x = 'Moisture class (%)', y = 'Root mass fraction (%)')+
+  guides(color = guide_legend(title = 'Temperature class'))+
+  scale_color_manual(values = c("dark blue", "dark red"))+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20, angle = 45, hjust = 1, color = 'black'), axis.text.y = element_text(size = 20, colour = 'black'),
+        legend.title = element_blank(), legend.text = element_text(size = 20))
+  #annotate('text', x = 1, y = 0.5, label = '*', size = 10)+
+  #annotate('text', x = 2, y = 0.6, label = '*', size = 10)+
+  #annotate('text', x = 3, y = 0.6, label = '*', size = 10)+
+  #annotate('text', x = 4, y = 0.6, label = '*', size = 10)+
+  #annotate('text', x = 5, y = 0.5, label = '*', size = 10)
+```
+
+
+
+
+
+
+
+```{R}
+moist<-750
+ggplot(data = foresttemp[foresttemp$soil_moisture<moist,], aes(x = Annual_Mean_Temperature, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+dry<-foresttemp[foresttemp$soil_moisture<moist,]
+dry$cate<-'Less than 750'
+summary(lm(rmf~Annual_Mean_Temperature,data = foresttemp[foresttemp$soil_moisture<moist,]))
+
+drytempclass1<-dry[dry$Annual_Mean_Temperature<(0),]
+drytempclass1$temp<-'Less than 0'
+
+drytempclass2<-dry[dry$Annual_Mean_Temperature>=0&dry$Annual_Mean_Temperature<5,]
+drytempclass2$temp<-'0 to 5'
+
+drytempclass3<-dry[dry$Annual_Mean_Temperature>=5&dry$Annual_Mean_Temperature<10,]
+drytempclass3$temp<-'5 to 10'
+
+drytempclass4<-dry[dry$Annual_Mean_Temperature>=10&dry$Annual_Mean_Temperature<15,]
+drytempclass4$temp<-'10 to 15'
+
+drytempclass5<-dry[dry$Annual_Mean_Temperature>=15,]
+drytempclass5$temp<-'Higher than 15'
+
+dry<-rbind(drytempclass1,rbind(drytempclass2,rbind(drytempclass3,rbind(drytempclass4,drytempclass5))))
+
+ggplot(data = foresttemp[foresttemp$soil_moisture>=moist,], aes(x = Annual_Mean_Temperature, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~Annual_Mean_Temperature,data = foresttemp[foresttemp$soil_moisture>=moist,]))
+
+wet<-foresttemp[foresttemp$soil_moisture>=moist,]
+wet$cate<-'Higher than 750'
+
+
+wettempclass1<-wet[wet$Annual_Mean_Temperature<(0),]
+wettempclass1$temp<-'Less than 0'
+
+wettempclass2<-wet[wet$Annual_Mean_Temperature>=0&wet$Annual_Mean_Temperature<5,]
+wettempclass2$temp<-'0 to 5'
+
+wettempclass3<-wet[wet$Annual_Mean_Temperature>=5&wet$Annual_Mean_Temperature<10,]
+wettempclass3$temp<-'5 to 10'
+
+wettempclass4<-wet[wet$Annual_Mean_Temperature>=10&wet$Annual_Mean_Temperature<15,]
+wettempclass4$temp<-'10 to 15'
+
+wettempclass5<-wet[wet$Annual_Mean_Temperature>=15,]
+wettempclass5$temp<-'Higher than 15'
+
+wet<-rbind(wettempclass1,rbind(wettempclass2,rbind(wettempclass3,rbind(wettempclass4,wettempclass5))))
+
+
+
+
+newdata<-rbind(dry,wet)
+
+newdata$temp<-factor(newdata$temp, levels = c('Less than 0', '0 to 5','5 to 10', '10 to 15', 'Higher than 15'))
+
+ggplot(newdata,aes(x = temp, y = rmf,color = cate))+
+  stat_summary(fun.data = 'mean_cl_boot' ,size = 1)+
+  stat_summary(fun = mean, geom = 'line', size = 1, aes(group = cate))+
+  theme_classic()+
+  geom_abline(slope = 0, intercept = 0,linetype = 'dashed')+
+  labs(x = 'Temperature class (\u00B0C)', y = 'Root mass fraction (%)')+
+  guides(color = guide_legend(title = 'Moisutre class'))+
+  scale_color_manual(values = c("#C7E9B4", "#081D58"))+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20, angle = 45, hjust = 1), axis.text.y = element_text(size = 20),
+        legend.title = element_text(size = 20), legend.text = element_text(size = 20))
+
+```
+
+```{R}
+### Cold and dry
+library(ggplot2)
+ggplot(data = foresttemp[foresttemp$soil_moisture<800&foresttemp$Annual_Mean_Temperature<6,], aes(x = Sand_Content_15cm, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~Sand_Content_15cm,data = foresttemp[foresttemp$soil_moisture<800&foresttemp$Annual_Mean_Temperature<6,]))
+coldanddry<-forestrmf[foresttemp$soil_moisture<800&foresttemp$Annual_Mean_Temperature<9,]
+coldanddry$cate<-'Low temp & low moist'
+### Hot and dry
+
+ggplot(data = foresttemp[foresttemp$soil_moisture<800&foresttemp$Annual_Mean_Temperature>=6,], aes(x = Sand_Content_15cm, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~Sand_Content_15cm,data = foresttemp[foresttemp$soil_moisture<800&foresttemp$Annual_Mean_Temperature>=6,]))
+
+hotanddry<-forestrmf[foresttemp$soil_moisture<800&foresttemp$Annual_Mean_Temperature>=9,]
+hotanddry$cate<-'High temp & low moist'
+### cold and humid
+
+ggplot(data = foresttemp[foresttemp$soil_moisture>=800&foresttemp$Annual_Mean_Temperature<6,], aes(x = Sand_Content_15cm, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~Sand_Content_15cm,data = foresttemp[foresttemp$soil_moisture>=800&foresttemp$Annual_Mean_Temperature<6,]))
+
+coldandhumid<-forestrmf[foresttemp$soil_moisture>=800&foresttemp$Annual_Mean_Temperature<9,]
+coldandhumid$cate<-'Low temp & high moist'
+### Hot and humid
+
+ggplot(data = foresttemp[foresttemp$soil_moisture>=800&foresttemp$Annual_Mean_Temperature>=6,], aes(x = Sand_Content_15cm, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~Sand_Content_15cm,data = foresttemp[foresttemp$soil_moisture>=800&foresttemp$Annual_Mean_Temperature>=6,]))
+
+hotandhumid<-forestrmf[foresttemp$soil_moisture>=800&foresttemp$Annual_Mean_Temperature>=9,]
+hotandhumid$cate<-'High temp & high moist'
+
+```
+
+```{R}
+newdata<-rbind(coldanddry,rbind(hotanddry,rbind(coldandhumid,hotandhumid)))
+
+ggplot(data = newdata, aes(x = Sand_Content_15cm, y = rmf, color = cate))+
+  geom_point()+
+  geom_smooth(method = 'lm', formula = 'y~x')
+
+```
+
+
+
+
+```{R}
+
+#### Cold and dry
+ggplot(data = foresttemp[foresttemp$soil_moisture<800&foresttemp$Annual_Mean_Temperature<6,], aes(x = Depth_to_Bedrock, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~Depth_to_Bedrock,data = foresttemp[foresttemp$soil_moisture<800&foresttemp$Annual_Mean_Temperature<6,]))
+
+### cold and humid
+
+ggplot(data = foresttemp[foresttemp$soil_moisture>=800&foresttemp$Annual_Mean_Temperature<6,], aes(x = Depth_to_Bedrock, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~Depth_to_Bedrock,data = foresttemp[foresttemp$soil_moisture>=800&foresttemp$Annual_Mean_Temperature<6,]))
+
+### hot and dry
+ggplot(data = foresttemp[foresttemp$soil_moisture<800&foresttemp$Annual_Mean_Temperature>=6,], aes(x = Depth_to_Bedrock, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~Depth_to_Bedrock,data = foresttemp[foresttemp$soil_moisture<800&foresttemp$Annual_Mean_Temperature>=6,]))
+
+### Hot and humid
+ggplot(data = foresttemp[foresttemp$soil_moisture>=800&foresttemp$Annual_Mean_Temperature>=6,], aes(x = Depth_to_Bedrock, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~Depth_to_Bedrock,data = foresttemp[foresttemp$soil_moisture>=800&foresttemp$Annual_Mean_Temperature>=6,]))
+
+```
+
+
+```{R}
+library(rpart)
+library(party)
+library(partykit)
+```
+
+
+```{R}
+
+# Creating formula
+
+formula.forest<-as.formula('rmf~Annual_Mean_Temperature+soil_moisture+Sand_Content_15cm+Depth_to_Bedrock')
+
+rpart.forest<-rpart(formula.forest, data = forestrmf, control = c(minsplit = 100, minbucket = 300, cp = 0.01))
+
+summary(rpart.forest)
+
+
+```
+
+```{R}
+plot(as.party(rpart.forest),type="extended", digits=4)
+
+
+```
+
+
+
+
+```{R}
+grassrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_rsr_sample_for_grsearch_20200517.csv')
+names(grassrmf)
+```
+
+```{R}
+ggplot(grassrmf[grassrmf$cnratio>0,], aes(x = Annual_Mean_Temperature, y = cnratio))+
+  geom_point()+
+  geom_smooth(method = 'loess')
+
+```
+
+
+
+
+```{R}
+
+# Creating formula
+
+formula.grass<-as.formula('rmf~Annual_Mean_Temperature+soil_moisture')
+
+rpart.grass<-rpart(formula.grass, data = grassrmf, control = c(minsplit = 50, minbucket = 100, cp = 0.01))
+
+summary(rpart.grass)
+
+
+```
+
+```{R}
+plot(as.party(rpart.grass),type="extended", digits=4)
+
+
+```
+
+Do the point partition in forest  by biomes
+
+```{R}
+tropicallist<-c(1,2,3)
+temperatelist<-c(4,5,8)
+
+boreallist<-c(6)
+
+
+```
+
+
+```{R}
+tropicalrmf<-read.csv(paste0('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\regional_points_biome_',1,'.csv'))
+for(i in 2:(length(tropicallist))){
+  addon<-read.csv(paste0('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\regional_points_biome_',tropicallist[i],'.csv'))
+  tropicalrmf<-rbind(tropicalrmf,addon)
+}
+print(paste0('Tropical','___',NROW(tropicalrmf)))
+tropicalrmf$biometype<-'tropical'
+
+temperatermf<-read.csv(paste0('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\regional_points_biome_',4,'.csv'))
+for(i in 2:(length(temperatelist))){
+  tempaddon<-read.csv(paste0('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\regional_points_biome_',temperatelist[i],'.csv'))
+  temperatermf<-rbind(temperatermf,tempaddon)
+}
+print(paste0('Temperate','___',NROW(temperatermf)))
+temperatermf$biometype<-'temperate'
+
+borealrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\regional_points_biome_6.csv')
+borealrmf$biometype<-'boreal'
+
+```
+
+
+
+
+
+
+
+
+```{R}
+
+
+humid1<-grassrmf[grassrmf$soil_moisture<400,]
+humid1$cate<-'Less than 400'
+
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid1))
+
+humid2<-grassrmf[grassrmf$soil_moisture>=400&grassrmf$soil_moisture<600,]
+humid2$cate<-'400 to 600'
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid2))
+
+
+humid3<-grassrmf[grassrmf$soil_moisture>=600&grassrmf$soil_moisture<800,]
+humid3$cate<-'600 to 800'
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid3))
+
+
+humid4<-grassrmf[grassrmf$soil_moisture>=800,]
+humid4$cate<-'Higher than 800'
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid4))
+
+
+
+
+humid5<-grassrmf[grassrmf$soil_moisture>=900,]
+humid5$cate<-'Higher than 900'
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid5))
+
+
+newdata<-rbind(humid1,rbind(humid2,rbind(humid3,rbind(humid4,humid5))))
+
+name<-c('Less than 400', '400 to 600', '600 to 800', 'Higher than 800')
+effect<-c(-0.5402, -0.307, -0.02913,-0.000786)
+se<-c(0.1254, 0.06536, 0.05162, 0.03978)
+group<-c(1,1,1,1)
+
+boxdata<-cbind(name,cbind(effect, se))
+boxdata<-as.data.frame(boxdata)
+boxdata$effect<-effect
+boxdata$se<-se
+boxdata$name<-factor(boxdata$name, levels = name)
+boxdata$group<-group
+p4<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
+  geom_line(aes(group = group, color = effect/effect),size = 1)+
+  geom_point(stat = 'identity',size = 6.18)+
+  geom_errorbar(aes(ymin = effect - 2*se, ymax = effect + 2*se),width = 0,size = 1,color = 'black')+
+  #theme_classic()+
+  scale_color_gradient(low = '#2166AC', high = '#2166AC')+
+  theme_classic()+
+  geom_abline(slope = 0, intercept = 0,linetype = 'dashed')+
+  labs(x = 'Moisture class (%)', y = 'Effect')+
+  theme(legend.position = 'none', axis.title = element_text(size = 20), axis.text.x = element_text(size = 20, angle = 45, hjust = 1,colour = 'black'), axis.text.y = element_text(size = 20,colour = 'black'))
+```
+
+See if grassland moisture can change the effect of cnratio on rmf
+```{R}
+ggplot(data = grassrmf[grassrmf$soil_moisture>=700,], aes(x = cnratio, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~cnratio,data = grassrmf[grassrmf$soil_moisture>=700,]))
+
+humid1<-grassrmf[grassrmf$soil_moisture<600,]
+humid1$cate<-'Less than 600'
+
+summary(lm(rmf~cnratio,data = humid1))
+
+humid2<-grassrmf[grassrmf$soil_moisture>=600&grassrmf$soil_moisture<700,]
+humid2$cate<-'600 to 700'
+summary(lm(rmf~cnratio,data = humid2))
+
+
+humid3<-grassrmf[grassrmf$soil_moisture>=700&grassrmf$soil_moisture<800,]
+humid3$cate<-'700 to 800'
+summary(lm(rmf~cnratio,data = humid3))
+
+
+humid4<-grassrmf[grassrmf$soil_moisture>=800&grassrmf$soil_moisture<900,]
+humid4$cate<-'800 to 900'
+summary(lm(rmf~cnratio,data = humid4))
+
+
+
+
+humid5<-grassrmf[grassrmf$soil_moisture>=900,]
+humid5$cate<-'Higher than 900'
+summary(lm(rmf~cnratio,data = humid5))
+
+
+newdata<-rbind(humid1,rbind(humid2,rbind(humid3,rbind(humid4,humid5))))
+
+name<-c('Less than 600', '600 to 700', '700 to 800', '800 to 900', 'Higher than 900')
+effect<-c(-0.375, -0.3827, -0.2693, -0.9036, -0.7385)
+se<-c(0.359, 0.4112, 0.2381, 0.1517, 0.2247)
+group<-c(1,1,1,1,1)
+
+boxdata<-cbind(name,cbind(effect, se))
+boxdata<-as.data.frame(boxdata)
+boxdata$effect<-effect
+boxdata$se<-se
+boxdata$name<-factor(boxdata$name, levels = name)
+boxdata$group<-group
+ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
+  geom_point(stat = 'identity',size = 6.18)+
+  geom_errorbar(aes(ymin = effect - 2*se, ymax = effect + 2*se),width = 0,size = 1,color = 'black')+
+  #theme_classic()+
+  scale_color_gradient(low = "#2166AC", high = "#B2182B")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{R}
+
+
+
+temp2<-grassrmf[grassrmf$Annual_Mean_Temperature<(-5),]
+temp2$cate<-'Less than -5'
+summary(lm(scale(rmf)~scale(soil_moisture),data = temp2))
+
+
+temp3<-grassrmf[grassrmf$Annual_Mean_Temperature>=(-5)&grassrmf$Annual_Mean_Temperature<0,]
+temp3$cate<-'-5 to 0'
+summary(lm(scale(rmf)~scale(soil_moisture),data = temp3))
+
+
+
+
+temp4<-grassrmf[grassrmf$Annual_Mean_Temperature>=0&grassrmf$Annual_Mean_Temperature<5,]
+temp4$cate<-'0 to 5'
+summary(lm(scale(rmf)~scale(soil_moisture),data = temp4))
+
+
+temp5<-grassrmf[grassrmf$Annual_Mean_Temperature>=5,]
+temp5$cate<-'Higher than 5'
+summary(lm(scale(rmf)~scale(soil_moisture),data = temp5))
+
+temp1<-grassrmf[grassrmf$Annual_Mean_Temperature<(10)&grassrmf$Annual_Mean_Temperature>=5,]
+temp1$cate<-'5 to 10'
+
+summary(lm(scale(rmf)~scale(soil_moisture),data = temp1))
+
+
+
+
+name<-c('Less than -5','-5 to 0','0 to 5','Higher than 5')
+effect<-c(-0.1377, -0.5442,-0.3452,-0.0808)
+se<-c(0.057, 0.04712, 0.04629,0.06516)
+group<-c(1,1,1,1)
+boxdata<-cbind(name,cbind(effect, se))
+boxdata<-as.data.frame(boxdata)
+boxdata$effect<-effect
+boxdata$se<-se
+boxdata$group<-group
+
+boxdata$name<-factor(boxdata$name, levels = c('Less than -5','-5 to 0','0 to 5', 'Higher than 5'))
+
+p5<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
+  geom_line(aes(group = group, color = effect/effect),size = 1)+
+  geom_point(stat = 'identity',size = 6.18)+
+  geom_errorbar(aes(ymin = effect - 2*se, ymax = effect + 2*se),width = 0,size = 1,color = 'black')+
+  #theme_classic()+
+  scale_color_gradient(low = '#2166AC', high = '#2166AC')+
+  theme_classic()+
+  geom_abline(slope = 0, intercept = 0,linetype = 'dashed')+
+  labs(x = 'Temperature class', y = 'Effect')+
+  theme(legend.position = 'none', axis.title = element_text(size = 20), axis.text.x = element_text(size = 20, angle = 45, hjust = 1,colour = 'black'), axis.text.y = element_text(size = 20, colour = 'black'))
+```
+
+
+
+```{R}
+
+temp1<-grassrmf[grassrmf$Annual_Mean_Temperature<(0),]
+temp1$cate<-'Less than 0'
+
+summary(lm(rmf~cnratio,data = temp1))
+
+temp2<-grassrmf[grassrmf$Annual_Mean_Temperature>=0&grassrmf$Annual_Mean_Temperature<5,]
+temp2$cate<-'0 to 5'
+summary(lm(rmf~cnratio,data = temp2))
+
+
+temp3<-grassrmf[grassrmf$Annual_Mean_Temperature>=5&grassrmf$Annual_Mean_Temperature<10,]
+temp3$cate<-'5 to 10'
+summary(lm(rmf~cnratio,data = temp3))
+
+
+
+
+temp4<-grassrmf[grassrmf$Annual_Mean_Temperature>=8,]
+temp4$cate<-'Higher than 10'
+summary(lm(rmf~cnratio,data = temp4))
+
+
+
+
+
+
+name<-c('Less than 0', '0 to 5', '5 to 10', 'Higher than 10')
+effect<-c(-1.2759, -1.052, -1.3450, -0.9787)
+se<-c(0.1189, 0.1773, 0.4735, 0.9008)
+
+boxdata<-cbind(name,cbind(effect, se))
+boxdata<-as.data.frame(boxdata)
+boxdata$effect<-effect
+boxdata$se<-se
+
+boxdata$name<-factor(boxdata$name, levels = c('Less than 0', '0 to 5','5 to 10', 'Higher than 10'))
+
+ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
+  geom_point(stat = 'identity',size = 6.18)+
+  geom_errorbar(aes(ymin = effect - 2*se, ymax = effect + 2*se),width = 0,size = 1,color = 'black')+
+  #theme_classic()+
+  scale_color_gradient(low = "#2166AC", high = "#B2182B")
+```
+
+
+
+
+
+
+
+
+
+
+
+```{R}
+ggplot(data = grassrmf, aes(x = soil_moisture))+
+  geom_histogram()
+quantile(grassrmf$soil_moisture,0.5)
+
+
+ggplot(data = grassrmf, aes(x = Annual_Mean_Temperature))+
+  geom_histogram()
+median(grassrmf$Annual_Mean_Temperature)
+quantile(grassrmf$Annual_Mean_Temperature, 0.1)
+quantile(grassrmf$Annual_Mean_Temperature, 0.9)
+```
+
+
+
+```{R}
+
+temp<-(-2)
+ggplot(data = grassrmf[grassrmf$Annual_Mean_Temperature<temp,], aes(x = soil_moisture, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+cold<-grassrmf[grassrmf$Annual_Mean_Temperature<temp,]
+cold$cate<-'cold'
+summary(lm(rmf~soil_moisture,data = grassrmf[grassrmf$Annual_Mean_Temperature<temp,]))
+
+ggplot(data = grassrmf[grassrmf$Annual_Mean_Temperature>=temp,], aes(x = soil_moisture, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~soil_moisture,data = grassrmf[grassrmf$Annual_Mean_Temperature>=temp,]))
+
+hot<-grassrmf[grassrmf$Annual_Mean_Temperature>=temp,]
+hot$cate<-'hot'
+
+coldmoistclass1<-cold[cold$soil_moisture<500, ]
+coldmoistclass1$moistclass<-'Less than 500'
+
+coldmoistclass2<-cold[cold$soil_moisture>=500&cold$soil_moisture<550,]
+coldmoistclass2$moistclass<-'Less than 600'
+
+coldmoistclass3<-cold[cold$soil_moisture>=550&cold$soil_moisture<600,]
+coldmoistclass3$moistclass<-'Less than 600'
+
+coldmoistclass4<-cold[cold$soil_moisture>=600&cold$soil_moisture<650,]
+coldmoistclass4$moistclass<-'600 to 700'
+
+coldmoistclass5<-cold[cold$soil_moisture>=650&cold$soil_moisture<700,]
+coldmoistclass5$moistclass<-'600 to 700'
+
+coldmoistclass6<-cold[cold$soil_moisture>=700&cold$soil_moisture<750,]
+coldmoistclass6$moistclass<-'700 to 800'
+
+coldmoistclass7<-cold[cold$soil_moisture>=750&cold$soil_moisture<800,]
+coldmoistclass7$moistclass<-'700 to 800'
+
+coldmoistclass8<-cold[cold$soil_moisture>=800&cold$soil_moisture<850,]
+coldmoistclass8$moistclass<-'800 to 900'
+
+coldmoistclass9<-cold[cold$soil_moisture>=850&cold$soil_moisture<900,]
+coldmoistclass9$moistclass<-'800 to 900'
+
+coldmoistclass10<-cold[cold$soil_moisture>=900,]
+coldmoistclass10$moistclass<-'Higher than 900'
+
+
+
+cold<-rbind(coldmoistclass1,rbind(coldmoistclass2,rbind(coldmoistclass3,rbind(coldmoistclass4,rbind(coldmoistclass5,rbind(coldmoistclass6,rbind(coldmoistclass7,rbind(coldmoistclass8,rbind(coldmoistclass9,coldmoistclass10)))))))))
+
+
+
+hotmoistclass1<-hot[hot$soil_moisture<500, ]
+hotmoistclass1$moistclass<-'Less than 500'
+
+hotmoistclass2<-hot[hot$soil_moisture>=500&hot$soil_moisture<550,]
+hotmoistclass2$moistclass<-'Less than 600'
+
+hotmoistclass3<-hot[hot$soil_moisture>=550&hot$soil_moisture<600,]
+hotmoistclass3$moistclass<-'Less than 600'
+
+hotmoistclass4<-hot[hot$soil_moisture>=600&hot$soil_moisture<650,]
+hotmoistclass4$moistclass<-'600 to 700'
+
+hotmoistclass5<-hot[hot$soil_moisture>=650&hot$soil_moisture<700,]
+hotmoistclass5$moistclass<-'600 to 700'
+
+hotmoistclass6<-hot[hot$soil_moisture>=700&hot$soil_moisture<750,]
+hotmoistclass6$moistclass<-'700 to 800'
+
+hotmoistclass7<-hot[hot$soil_moisture>=750&hot$soil_moisture<800,]
+hotmoistclass7$moistclass<-'700 to 800'
+
+hotmoistclass8<-hot[hot$soil_moisture>=800&hot$soil_moisture<850,]
+hotmoistclass8$moistclass<-'800 to 900'
+
+hotmoistclass9<-hot[hot$soil_moisture>=850&hot$soil_moisture<900,]
+hotmoistclass9$moistclass<-'800 to 900'
+
+hotmoistclass10<-hot[hot$soil_moisture>=900,]
+hotmoistclass10$moistclass<-'Higher than 900'
+
+hot<-rbind(hotmoistclass1,rbind(hotmoistclass2,rbind(hotmoistclass3,rbind(hotmoistclass4,rbind(hotmoistclass5,rbind(hotmoistclass6,rbind(hotmoistclass7,rbind(hotmoistclass8,rbind(hotmoistclass9,hotmoistclass10)))))))))
+
+
+
+
+newdata<-rbind(cold,hot)
+
+
+newdata$moistclass<-factor(newdata$moistclass, levels = c('Less than 500','Less than 600', '600 to 700','700 to 800', '800 to 900', 'Higher than 900'))
+
+ggplot(newdata,aes(x = moistclass, y = rmf,color = cate))+
+  #geom_point(alpha = 0.2)+
+  stat_summary(fun.data = 'mean_cl_boot' ,size = 1)+
+  stat_summary(fun = mean, geom = 'line', size = 1, aes(group = cate))
+```
+
+```{R}
+quantile(grassrmf$Annual_Mean_Temperature, 0.25)
+quantile(grassrmf$Annual_Mean_Temperature, 0.75)
+
+```
+
+
+
+```{R}
+
+temp1<-(-5)
+
+temp2<-5
+ggplot(data = grassrmf[grassrmf$Annual_Mean_Temperature<temp1,], aes(x = soil_moisture, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+cold<-grassrmf[grassrmf$Annual_Mean_Temperature<temp1,]
+cold$cate<-'cold'
+summary(lm(rmf~soil_moisture,data = grassrmf[grassrmf$Annual_Mean_Temperature<temp1,]))
+
+ggplot(data = grassrmf[grassrmf$Annual_Mean_Temperature>=temp2,], aes(x = soil_moisture, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~soil_moisture,data = grassrmf[grassrmf$Annual_Mean_Temperature>=temp2,]))
+
+hot<-grassrmf[grassrmf$Annual_Mean_Temperature>=temp2,]
+hot$cate<-'hot'
+
+mid<-grassrmf[grassrmf$Annual_Mean_Temperature>=temp1&grassrmf$Annual_Mean_Temperature<temp2,]
+mid$cate<-'mid'
+
+#coldmoistclass1<-cold[cold$soil_moisture<400, ]
+#coldmoistclass1$moistclass<-'Less than 400'
+
+coldmoistclass2<-cold[cold$soil_moisture>=400&cold$soil_moisture<500,]
+coldmoistclass2$moistclass<-'Less than 600'
+
+coldmoistclass3<-cold[cold$soil_moisture>=500&cold$soil_moisture<600,]
+coldmoistclass3$moistclass<-'Less than 600'
+
+coldmoistclass4<-cold[cold$soil_moisture>=600&cold$soil_moisture<650,]
+coldmoistclass4$moistclass<-'600 to 800'
+
+coldmoistclass5<-cold[cold$soil_moisture>=650&cold$soil_moisture<700,]
+coldmoistclass5$moistclass<-'600 to 800'
+
+coldmoistclass6<-cold[cold$soil_moisture>=700&cold$soil_moisture<750,]
+coldmoistclass6$moistclass<-'600 to 800'
+
+coldmoistclass7<-cold[cold$soil_moisture>=750&cold$soil_moisture<800,]
+coldmoistclass7$moistclass<-'600 to 800'
+
+coldmoistclass8<-cold[cold$soil_moisture>=800&cold$soil_moisture<850,]
+coldmoistclass8$moistclass<-'Higher than 800'
+
+coldmoistclass9<-cold[cold$soil_moisture>=850&cold$soil_moisture<900,]
+coldmoistclass9$moistclass<-'Higher than 800'
+
+coldmoistclass10<-cold[cold$soil_moisture>=900,]
+coldmoistclass10$moistclass<-'Higher than 800'
+
+
+
+cold<-rbind(rbind(coldmoistclass2,rbind(coldmoistclass3,rbind(coldmoistclass4,rbind(coldmoistclass5,rbind(coldmoistclass6,rbind(coldmoistclass7,rbind(coldmoistclass8,rbind(coldmoistclass9,coldmoistclass10)))))))))
+
+
+
+hotmoistclass1<-hot[hot$soil_moisture<400, ]
+hotmoistclass1$moistclass<-'Less than 400'
+
+hotmoistclass2<-hot[hot$soil_moisture>=400&hot$soil_moisture<500,]
+hotmoistclass2$moistclass<-'Less than 600'
+
+hotmoistclass3<-hot[hot$soil_moisture>=500&hot$soil_moisture<600,]
+hotmoistclass3$moistclass<-'Less than 600'
+
+hotmoistclass4<-hot[hot$soil_moisture>=600&hot$soil_moisture<650,]
+hotmoistclass4$moistclass<-'600 to 800'
+
+hotmoistclass5<-hot[hot$soil_moisture>=650&hot$soil_moisture<700,]
+hotmoistclass5$moistclass<-'600 to 800'
+
+hotmoistclass6<-hot[hot$soil_moisture>=700&hot$soil_moisture<750,]
+hotmoistclass6$moistclass<-'600 to 800'
+
+hotmoistclass7<-hot[hot$soil_moisture>=750&hot$soil_moisture<800,]
+hotmoistclass7$moistclass<-'600 to 800'
+
+hotmoistclass8<-hot[hot$soil_moisture>=800&hot$soil_moisture<850,]
+hotmoistclass8$moistclass<-'Higher than 800'
+
+hotmoistclass9<-hot[hot$soil_moisture>=850&hot$soil_moisture<900,]
+hotmoistclass9$moistclass<-'Higher than 800'
+
+hotmoistclass10<-hot[hot$soil_moisture>=900,]
+hotmoistclass10$moistclass<-'Higher than 800'
+
+hot<-rbind(hotmoistclass1,rbind(hotmoistclass2,rbind(hotmoistclass3,rbind(hotmoistclass4,rbind(hotmoistclass5,rbind(hotmoistclass6,rbind(hotmoistclass7,rbind(hotmoistclass8,rbind(hotmoistclass9,hotmoistclass10)))))))))
+
+
+
+midmoistclass1<-mid[mid$soil_moisture<400, ]
+midmoistclass1$moistclass<-'Less than 400'
+
+midmoistclass2<-mid[mid$soil_moisture>=400&mid$soil_moisture<500,]
+midmoistclass2$moistclass<-'Less than 600'
+
+midmoistclass3<-mid[mid$soil_moisture>=500&mid$soil_moisture<600,]
+midmoistclass3$moistclass<-'Less than 600'
+
+midmoistclass4<-mid[mid$soil_moisture>=600&mid$soil_moisture<650,]
+midmoistclass4$moistclass<-'600 to 800'
+
+midmoistclass5<-mid[mid$soil_moisture>=650&mid$soil_moisture<700,]
+midmoistclass5$moistclass<-'600 to 800'
+
+midmoistclass6<-mid[mid$soil_moisture>=700&mid$soil_moisture<750,]
+midmoistclass6$moistclass<-'600 to 800'
+
+midmoistclass7<-mid[mid$soil_moisture>=750&mid$soil_moisture<800,]
+midmoistclass7$moistclass<-'600 to 800'
+
+midmoistclass8<-mid[mid$soil_moisture>=800&mid$soil_moisture<850,]
+midmoistclass8$moistclass<-'Higher than 800'
+
+midmoistclass9<-mid[mid$soil_moisture>=850&mid$soil_moisture<900,]
+midmoistclass9$moistclass<-'Higher than 800'
+
+midmoistclass10<-mid[mid$soil_moisture>=900,]
+midmoistclass10$moistclass<-'Higher than 800'
+
+mid<-rbind(midmoistclass1,rbind(midmoistclass2,rbind(midmoistclass3,rbind(midmoistclass4,rbind(midmoistclass5,rbind(midmoistclass6,rbind(midmoistclass7,rbind(midmoistclass8,rbind(midmoistclass9,midmoistclass10)))))))))
+
+
+
+
+
+newdata<-rbind(cold,rbind(hot,mid))
+
+
+newdata$moistclass<-factor(newdata$moistclass, levels = c('Less than 400','Less than 600', '600 to 800', 'Higher than 800'))
+
+ggplot(newdata,aes(x = moistclass, y = rmf,color = cate))+
+  #geom_point(alpha = 0.2)+
+  stat_summary(fun.data = 'mean_cl_boot' ,size = 1)+
+  stat_summary(fun = mean, geom = 'line', size = 1, aes(group = cate))
+```
+
+
+
+
+
+```{R}
+temp<-0
+ggplot(data = grassrmf[grassrmf$Annual_Mean_Temperature<temp&grassrmf$cnratio>0,], aes(x = cnratio, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+cold<-grassrmf[grassrmf$Annual_Mean_Temperature<temp,]
+cold$cate<-'cold'
+summary(lm(rmf~cnratio,data = grassrmf[grassrmf$Annual_Mean_Temperature<temp&grassrmf$cnratio>0,]))
+
+ggplot(data = grassrmf[grassrmf$Annual_Mean_Temperature>=temp&grassrmf$cnratio>0,], aes(x = cnratio, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~cnratio,data = grassrmf[grassrmf$Annual_Mean_Temperature>=temp&grassrmf$cnratio>0,]))
+
+hot<-grassrmf[grassrmf$Annual_Mean_Temperature>=temp,]
+hot$cate<-'hot'
+
+
+```
+
+
+```{R}
+moist1<-700
+moist2<-400
+ggplot(data = grassrmf[grassrmf$soil_moisture<moist,], aes(x = Annual_Mean_Temperature, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+dry<-grassrmf[grassrmf$soil_moisture<moist2,]
+dry$cate<-'<40%'
+summary(lm(rmf~Annual_Mean_Temperature,data = grassrmf[grassrmf$soil_moisture<moist2,]))
+
+
+#drytempclass6<-dry[dry$Annual_Mean_Temperature<(-9),]
+#drytempclass6$temp<-'-6 to 0'
+
+drytempclass1<-dry[dry$Annual_Mean_Temperature<(-5),]
+drytempclass1$temp<-'Less than -5'
+
+drytempclass2<-dry[dry$Annual_Mean_Temperature>=-5&dry$Annual_Mean_Temperature<(-3),]
+drytempclass2$temp<-'-5 to 0'
+
+drytempclass3<-dry[dry$Annual_Mean_Temperature>=-3&dry$Annual_Mean_Temperature<0,]
+drytempclass3$temp<-'-5 to 0'
+
+drytempclass4<-dry[dry$Annual_Mean_Temperature>=0&dry$Annual_Mean_Temperature<3,]
+drytempclass4$temp<-'0 to 5'
+
+drytempclass5<-dry[dry$Annual_Mean_Temperature>=3&dry$Annual_Mean_Temperature<5,]
+drytempclass5$temp<-'0 to 5'
+
+drytempclass7<-dry[dry$Annual_Mean_Temperature>=5&dry$Annual_Mean_Temperature<9,]
+drytempclass7$temp<-'Higher than 5'
+
+drytempclass8<-dry[dry$Annual_Mean_Temperature>=9,]
+drytempclass8$temp<-'Higher than 5'
+
+dry<-rbind(drytempclass1,rbind(drytempclass2,rbind(drytempclass3,rbind(drytempclass4,rbind(drytempclass5,rbind(rbind(drytempclass7,drytempclass8)))))))
+
+ggplot(data = grassrmf[grassrmf$soil_moisture>=moist1,], aes(x = Annual_Mean_Temperature, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~Annual_Mean_Temperature,data = grassrmf[grassrmf$soil_moisture>=moist1,]))
+
+wet<-grassrmf[grassrmf$soil_moisture>=moist1,]
+wet$cate<-'\u226570%'
+
+
+wettempclass6<-wet[wet$Annual_Mean_Temperature<(-9),]
+wettempclass6$temp<-'Less than -5'
+wettempclass1<-wet[wet$Annual_Mean_Temperature<(-5)&wet$Annual_Mean_Temperature>=-9,]
+wettempclass1$temp<-'Less than -5'
+
+wettempclass2<-wet[wet$Annual_Mean_Temperature>=-5&wet$Annual_Mean_Temperature<(-3),]
+wettempclass2$temp<-'-5 to 0'
+
+wettempclass3<-wet[wet$Annual_Mean_Temperature>=-3&wet$Annual_Mean_Temperature<0,]
+wettempclass3$temp<-'-5 to 0'
+
+wettempclass4<-wet[wet$Annual_Mean_Temperature>=0&wet$Annual_Mean_Temperature<3,]
+wettempclass4$temp<-'0 to 5'
+
+wettempclass5<-wet[wet$Annual_Mean_Temperature>=3&wet$Annual_Mean_Temperature<5,]
+wettempclass5$temp<-'0 to 5'
+
+wettempclass7<-wet[wet$Annual_Mean_Temperature>=5&wet$Annual_Mean_Temperature<9,]
+wettempclass7$temp<-'Higher than 5'
+
+
+wettempclass8<-wet[wet$Annual_Mean_Temperature>=9,]
+wettempclass8$temp<-'Higher than 5'
+
+
+wet<-rbind(wettempclass1,rbind(wettempclass2,rbind(wettempclass3,rbind(wettempclass4,rbind(wettempclass5,rbind(wettempclass6,rbind(wettempclass7,wettempclass8)))))))
+
+
+
+ggplot(data = grassrmf[grassrmf$soil_moisture<moist1&grassrmf$Annual_Mean_Temperature>=moist2,], aes(x = Annual_Mean_Temperature, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+
+mid<-grassrmf[grassrmf$soil_moisture<moist1&grassrmf$soil_moisture>=moist2,]
+mid$cate<-'\u226540% & <70%'
+summary(lm(rmf~Annual_Mean_Temperature,data = grassrmf[grassrmf$soil_moisture<moist1&grassrmf$soil_moisture>=moist2,]))
+
+
+midtempclass6<-mid[mid$Annual_Mean_Temperature<(-9),]
+midtempclass6$temp<-'Less than -5'
+
+midtempclass1<-mid[mid$Annual_Mean_Temperature<(-5)& mid$Annual_Mean_Temperature>=-9,]
+midtempclass1$temp<-'Less than -5'
+
+midtempclass2<-mid[mid$Annual_Mean_Temperature>=-5&mid$Annual_Mean_Temperature<(-3),]
+midtempclass2$temp<-'-5 to 0'
+
+midtempclass3<-mid[mid$Annual_Mean_Temperature>=-3&mid$Annual_Mean_Temperature<0,]
+midtempclass3$temp<-'-5 to 0'
+
+midtempclass4<-mid[mid$Annual_Mean_Temperature>=0&mid$Annual_Mean_Temperature<3,]
+midtempclass4$temp<-'0 to 5'
+
+midtempclass5<-mid[mid$Annual_Mean_Temperature>=3&mid$Annual_Mean_Temperature<5,]
+midtempclass5$temp<-'0 to 5'
+
+midtempclass7<-mid[mid$Annual_Mean_Temperature>=5&mid$Annual_Mean_Temperature<9,]
+midtempclass7$temp<-'Higher than 5'
+
+midtempclass8<-mid[mid$Annual_Mean_Temperature>=9,]
+midtempclass8$temp<-'Higher than 5'
+
+mid<-rbind(midtempclass1,rbind(midtempclass2,rbind(midtempclass3,rbind(midtempclass4,rbind(midtempclass5,rbind(midtempclass6,rbind(midtempclass7,midtempclass8)))))))
+
+
+
+
+newdata<-rbind(dry,mid,wet)
+
+newdata$temp<-factor(newdata$temp, levels = c('Less than -5','-5 to 0', '0 to 5', 'Higher than 5'))
+
+p6<-ggplot(newdata,aes(x = temp, y = rmf,color = cate))+
+  stat_summary(fun.data = 'mean_cl_boot', size = 1)+
+  stat_summary(fun = mean, geom = 'line', size = 1, aes(group = cate))+
+  theme_classic()+
+  geom_abline(slope = 0, intercept = 0,linetype = 'dashed')+
+  labs(x = 'Temperature class (\u00B0C)', y = 'Root mass fraction (%)')+
+  guides(color = guide_legend(title = 'Moisutre class'))+
+  scale_color_viridis_d(direction = -1)+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20, angle = 45, hjust = 1,colour = 'black'), axis.text.y = element_text(size = 20,colour = 'black'),
+        legend.title = element_blank(), legend.text = element_text(size = 15))
+  #stat_summary_bin(bins = 3)
+  #stat_summary(fun = mean, geom = 'line', aes(group = cate))
+
+#datacheck<-rbind(wettempclass1,rbind(wettempclass2,rbind(wettempclass3,rbind(wettempclass4,wettempclass6))))
+#datacheck<-rbind(wettempclass5,rbind(wettempclass7,wettempclass8))
+
+#ggplot(datacheck, aes(x = longitude, y = latitude))+
+#  geom_point()
+
+```
+
+
+
+```{R}
+shrubrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_rsr_sample_for_grsearch_20200517.csv')
+names(shrubrmf)
+```
+
+```{R}
+ggplot(shrubrmf, aes(x = Annual_Mean_Temperature))+
+  geom_histogram()
+median(shrubrmf$Annual_Mean_Temperature)
+ggplot(shrubrmf, aes(x = soil_moisture))+
+  geom_histogram()
+median(shrubrmf$soil_moisture)
+```
+
+
+```{R}
+quantile(shrubrmf$soil_moisture, 0.25)
+quantile(shrubrmf$soil_moisture, 0.75)
+
+```
+
+
+
+```{R}
+moist1<-500
+moist2<-750
+ggplot(data = shrubrmf[shrubrmf$soil_moisture<moist1,], aes(x = Annual_Mean_Temperature, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+dry<-shrubrmf[shrubrmf$soil_moisture<moist1,]
+dry$cate<-'dry'
+summary(lm(rmf~Annual_Mean_Temperature,data = shrubrmf[shrubrmf$soil_moisture<moist1,]))
+
+drytempclass1<-dry[dry$Annual_Mean_Temperature<(0),]
+drytempclass1$temp<-'Less than 0'
+
+drytempclass2<-dry[dry$Annual_Mean_Temperature>=0&dry$Annual_Mean_Temperature<5,]
+drytempclass2$temp<-'0 to 10'
+
+drytempclass3<-dry[dry$Annual_Mean_Temperature>=5&dry$Annual_Mean_Temperature<10,]
+drytempclass3$temp<-'0 to 10'
+
+drytempclass4<-dry[dry$Annual_Mean_Temperature>=10&dry$Annual_Mean_Temperature<15,]
+drytempclass4$temp<-'Higher than 10'
+
+drytempclass5<-dry[dry$Annual_Mean_Temperature>=15,]
+drytempclass5$temp<-'Higher than 10'
+
+dry<-rbind(drytempclass1,rbind(drytempclass2,rbind(drytempclass3,rbind(drytempclass4,drytempclass5))))
+
+ggplot(data = shrubrmf[shrubrmf$soil_moisture>=moist2,], aes(x = Annual_Mean_Temperature, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~Annual_Mean_Temperature,data = shrubrmf[shrubrmf$soil_moisture>=moist2,]))
+
+wet<-shrubrmf[shrubrmf$soil_moisture>=moist2,]
+wet$cate<-'wet'
+
+
+wettempclass1<-wet[wet$Annual_Mean_Temperature<(0),]
+wettempclass1$temp<-'Less than 0'
+
+wettempclass2<-wet[wet$Annual_Mean_Temperature>=0&wet$Annual_Mean_Temperature<5,]
+wettempclass2$temp<-'0 to 10'
+
+wettempclass3<-wet[wet$Annual_Mean_Temperature>=5&wet$Annual_Mean_Temperature<10,]
+wettempclass3$temp<-'0 to 10'
+
+wettempclass4<-wet[wet$Annual_Mean_Temperature>=10&wet$Annual_Mean_Temperature<20,]
+wettempclass4$temp<-'Higher than 10'
+
+wettempclass5<-wet[wet$Annual_Mean_Temperature>=20,]
+wettempclass5$temp<-'Higher than 20'
+
+wet<-rbind(wettempclass1,rbind(wettempclass2,rbind(wettempclass3,rbind(wettempclass4,wettempclass5))))
+
+
+
+
+newdata<-rbind(dry,wet)
+
+newdata$temp<-factor(newdata$temp, levels = c('Less than 0', '0 to 10', 'Higher than 10', 'Higher than 20'))
+
+ggplot(newdata,aes(x = temp, y = rmf,color = cate))+
+  stat_summary(fun.data = 'mean_cl_boot' ,size = 1)+
+  stat_summary(fun = mean, geom = 'line', size = 1, aes(group = cate))+
+  theme_classic()+
+  geom_abline(slope = 0, intercept = 0,linetype = 'dashed')+
+  labs(x = 'Temperature class (\u00B0C)', y = 'Root mass fraction (%)')+
+  guides(color = guide_legend(title = 'Moisutre class'))+
+  scale_color_viridis_d()+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20, angle = 45, hjust = 1), axis.text.y = element_text(size = 20),
+        legend.title = element_text(size = 20), legend.text = element_text(size = 20))
+
+```
+
+
+```{R}
+quantile(shrubrmf$Annual_Mean_Temperature,0.25)
+quantile(shrubrmf$Annual_Mean_Temperature,0.75)
+
+median(shrubrmf$Annual_Mean_Temperature)
+mean(shrubrmf$Annual_Mean_Temperature)
+```
+
+
+
+
+
+
+
+```{R}
+
+temp1<-(2)
+temp2<-2
+ggplot(data = shrubrmf[shrubrmf$Annual_Mean_Temperature<temp1,], aes(x = soil_moisture, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+cold<-shrubrmf[shrubrmf$Annual_Mean_Temperature<temp1,]
+cold$cate<-'<2\u00B0C'
+summary(lm(rmf~soil_moisture,data = shrubrmf[shrubrmf$Annual_Mean_Temperature<temp1,]))
+
+ggplot(data = shrubrmf[shrubrmf$Annual_Mean_Temperature>=temp2,], aes(x = soil_moisture, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~soil_moisture,data = shrubrmf[shrubrmf$Annual_Mean_Temperature>=temp2,]))
+
+hot<-shrubrmf[shrubrmf$Annual_Mean_Temperature>=temp2,]
+hot$cate<-'\u22652\u00B0C'
+
+coldmoistclass1<-cold[cold$soil_moisture<500, ]
+coldmoistclass1$moistclass<-'Less than 600'
+
+coldmoistclass2<-cold[cold$soil_moisture>=500&cold$soil_moisture<550,]
+coldmoistclass2$moistclass<-'Less than 600'
+
+coldmoistclass3<-cold[cold$soil_moisture>=550&cold$soil_moisture<600,]
+coldmoistclass3$moistclass<-'Less than 600'
+
+coldmoistclass4<-cold[cold$soil_moisture>=600&cold$soil_moisture<650,]
+coldmoistclass4$moistclass<-'600 to 700'
+
+coldmoistclass5<-cold[cold$soil_moisture>=650&cold$soil_moisture<700,]
+coldmoistclass5$moistclass<-'600 to 700'
+
+coldmoistclass6<-cold[cold$soil_moisture>=700&cold$soil_moisture<750,]
+coldmoistclass6$moistclass<-'700 to 800'
+
+coldmoistclass7<-cold[cold$soil_moisture>=750&cold$soil_moisture<800,]
+coldmoistclass7$moistclass<-'700 to 800'
+
+coldmoistclass8<-cold[cold$soil_moisture>=800&cold$soil_moisture<850,]
+coldmoistclass8$moistclass<-'Higher than 800'
+
+coldmoistclass9<-cold[cold$soil_moisture>=850&cold$soil_moisture<900,]
+coldmoistclass9$moistclass<-'Higher than 800'
+
+coldmoistclass10<-cold[cold$soil_moisture>=900,]
+coldmoistclass10$moistclass<-'Higher than 800'
+
+
+
+cold<-rbind(coldmoistclass1,rbind(coldmoistclass2,rbind(coldmoistclass3,rbind(coldmoistclass4,rbind(coldmoistclass5,rbind(coldmoistclass6,rbind(coldmoistclass7,rbind(coldmoistclass8,rbind(coldmoistclass9,coldmoistclass10)))))))))
+
+
+
+hotmoistclass1<-hot[hot$soil_moisture<500, ]
+hotmoistclass1$moistclass<-'Less than 600'
+
+hotmoistclass2<-hot[hot$soil_moisture>=500&hot$soil_moisture<550,]
+hotmoistclass2$moistclass<-'Less than 600'
+
+hotmoistclass3<-hot[hot$soil_moisture>=550&hot$soil_moisture<600,]
+hotmoistclass3$moistclass<-'Less than 600'
+
+hotmoistclass4<-hot[hot$soil_moisture>=600&hot$soil_moisture<650,]
+hotmoistclass4$moistclass<-'600 to 700'
+
+hotmoistclass5<-hot[hot$soil_moisture>=650&hot$soil_moisture<700,]
+hotmoistclass5$moistclass<-'600 to 700'
+
+hotmoistclass6<-hot[hot$soil_moisture>=700&hot$soil_moisture<750,]
+hotmoistclass6$moistclass<-'700 to 800'
+
+hotmoistclass7<-hot[hot$soil_moisture>=750&hot$soil_moisture<800,]
+hotmoistclass7$moistclass<-'700 to 800'
+
+hotmoistclass8<-hot[hot$soil_moisture>=800&hot$soil_moisture<850,]
+hotmoistclass8$moistclass<-'Higher than 800'
+
+hotmoistclass9<-hot[hot$soil_moisture>=850&hot$soil_moisture<900,]
+hotmoistclass9$moistclass<-'Higher than 800'
+
+hotmoistclass10<-hot[hot$soil_moisture>=900,]
+hotmoistclass10$moistclass<-'Higher than 800'
+
+hot<-rbind(hotmoistclass1,rbind(hotmoistclass2,rbind(hotmoistclass3,rbind(hotmoistclass4,rbind(hotmoistclass5,rbind(hotmoistclass6,rbind(hotmoistclass7,rbind(hotmoistclass8,rbind(hotmoistclass9,hotmoistclass10)))))))))
+
+
+
+
+newdata<-rbind(cold,hot)
+
+
+newdata$moistclass<-factor(newdata$moistclass, levels = c('Less than 600', '600 to 700','700 to 800', 'Higher than 800'))
+
+p9<-ggplot(newdata,aes(x = moistclass, y = rmf,color = cate))+
+  #geom_point(alpha = 0.2)+
+  stat_summary(fun.data = 'mean_cl_boot' ,size = 1)+
+  stat_summary(fun = mean, geom = 'line', size = 1, aes(group = cate))+
+  theme_classic()+
+  geom_abline(slope = 0, intercept = 0,linetype = 'dashed')+
+  labs(x = 'Moisture class (%)', y = 'Root mass fraction (%)')+
+  guides(color = guide_legend(title = 'Temperature class (\u00B0C)'))+
+  scale_color_manual(values = c('dark blue','dark red'))+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20, angle = 45, hjust = 1,colour = 'black'), axis.text.y = element_text(size = 20,colour = 'black'),
+        legend.title = element_blank(), legend.text = element_text(size = 20))
+```
+
+
+
+```{R}
+
+
+humid1<-shrubrmf[shrubrmf$soil_moisture<600,]
+humid1$cate<-'Less than 600'
+
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid1))
+
+humid2<-shrubrmf[shrubrmf$soil_moisture>=600&shrubrmf$soil_moisture<700,]
+humid2$cate<-'600 to 700'
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid2))
+
+
+humid3<-shrubrmf[shrubrmf$soil_moisture>=700&shrubrmf$soil_moisture<800,]
+humid3$cate<-'700 to 800'
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid3))
+
+
+humid4<-shrubrmf[shrubrmf$soil_moisture>=800,]
+humid4$cate<-'Higher than 800'
+summary(lm(scale(rmf)~scale(Annual_Mean_Temperature),data = humid4))
+
+
+
+
+name<-c('Less than 600', '600 to 700', '700 to 800', 'Higher than 800' )
+effect<-c(-0.01666, -0.2087, -0.4413, -0.4547)
+se<-c(0.01104, 0.1677, 0.1338, 0.06997)
+group<-c(1,1,1,1)
+
+
+boxdata<-cbind(name,cbind(effect, se))
+boxdata<-as.data.frame(boxdata)
+boxdata$effect<-effect
+boxdata$se<-se
+boxdata$name<-factor(boxdata$name, levels = name)
+boxdata$group<-group
+
+p7<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
+  geom_point(stat = 'identity',size = 6.18)+
+  geom_line(aes(group = group, color = effect/effect),size = 1)+
+  geom_errorbar(aes(ymin = effect - 2*se, ymax = effect + 2*se),width = 0,size = 1,color = 'black')+
+  #theme_classic()+
+  scale_color_gradient(low = "#2166AC", high = "#2166AC")+
+  theme_classic()+
+  geom_abline(slope = 0, intercept = 0,linetype = 'dashed')+
+  labs(x = 'Moisture class (%)', y = 'Effect')+
+  theme(legend.position = 'none', axis.title = element_text(size = 20), axis.text.x = element_text(size = 20, angle = 45, hjust = 1,colour = 'black'), axis.text.y = element_text(size = 20,colour = 'black'))
+
+```
+
+
+
+
+```{R}
+
+temp1<-shrubrmf[shrubrmf$Annual_Mean_Temperature<(0),]
+temp1$cate<-'Less than 0'
+
+summary(lm(scale(rmf)~scale(soil_moisture),data = temp1))
+
+temp2<-shrubrmf[shrubrmf$Annual_Mean_Temperature>=(0)&shrubrmf$Annual_Mean_Temperature<10,]
+temp2$cate<-'0 to 10'
+summary(lm(scale(rmf)~scale(soil_moisture),data = temp2))
+
+
+#temp5<-shrubrmf[shrubrmf$Annual_Mean_Temperature>=(5)&shrubrmf$Annual_Mean_Temperature<10,]
+#temp5$cate<-'5 to 10'
+#summary(lm(scale(rmf)~scale(soil_moisture),data = temp5))
+
+
+temp3<-shrubrmf[shrubrmf$Annual_Mean_Temperature>=10,]
+temp3$cate<-'Higher than 10'
+summary(lm(scale(rmf)~scale(soil_moisture),data = temp3))
+
+
+
+
+#temp4<-shrubrmf[shrubrmf$Annual_Mean_Temperature>=15,]
+#temp4$cate<-'Higher than 15'
+#summary(lm(scale(rmf)~scale(soil_moisture),data = temp4))
+
+
+
+
+
+
+
+name<-c('Less than 0', '0 to 10', 'Higher than 10')
+effect<-c(0.2101,0.1177 ,-0.307)
+se<-c(0.08036, 0.09301 ,0.1199)
+group<-c(1,1,1)
+
+boxdata<-cbind(name,cbind(effect, se))
+boxdata<-as.data.frame(boxdata)
+boxdata$effect<-effect
+boxdata$se<-se
+boxdata$group<-group
+
+boxdata$name<-factor(boxdata$name, levels = c('Less than 0', '0 to 10', 'Higher than 10'))
+
+p8<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
+  geom_line(aes(group = group,color = effect/effect), size = 1)+
+  geom_point(stat = 'identity',size = 6.18)+
+  geom_errorbar(aes(ymin = effect - 2*se, ymax = effect + 2*se),width = 0,size = 1,color = 'black')+
+  #theme_classic()+
+  scale_color_gradient(low = "#2166AC", high = "#B2182B")+
+  theme_classic()+
+  geom_abline(slope = 0, intercept = 0,linetype = 'dashed')+
+  labs(x = 'Temperature class (\u00B0C)', y = 'Effect')+
+  theme(legend.position = 'none', axis.title = element_text(size = 20), axis.text.x = element_text(size = 20, angle = 45, hjust = 1,colour = 'black'), axis.text.y = element_text(size = 20,colour = 'black'))
+```
+
+
+I am pretty curious that how water availability change the effect of cnratio, as water as a means of effective covariate.
+
+```{R}
+ggplot(data = shrubrmf[shrubrmf$soil_moisture>=700,], aes(x = cnratio, y = rmf))+
+  geom_point()+
+  geom_smooth(method = 'lm' ,formula = 'y~x')
+
+summary(lm(rmf~cnratio,data = shrubrmf[shrubrmf$soil_moisture>=700,]))
+
+humid1<-shrubrmf[shrubrmf$soil_moisture<600,]
+humid1$cate<-'Less than 600'
+
+summary(lm(rmf~cnratio,data = humid1))
+
+humid2<-shrubrmf[shrubrmf$soil_moisture>=600&shrubrmf$soil_moisture<700,]
+humid2$cate<-'600 to 700'
+summary(lm(rmf~cnratio,data = humid2))
+
+
+humid3<-shrubrmf[shrubrmf$soil_moisture>=700&shrubrmf$soil_moisture<800,]
+humid3$cate<-'700 to 800'
+summary(lm(rmf~cnratio,data = humid3))
+
+
+humid4<-shrubrmf[shrubrmf$soil_moisture>=800,]
+humid4$cate<-'Higher than 800'
+summary(lm(rmf~cnratio,data = humid4))
+
+
+
+newdata<-rbind(humid1,rbind(humid2,rbind(humid3,rbind(humid4,humid5))))
+
+name<-c('Less than 600', '600 to 700', '700 to 800', 'Higher than 800' )
+effect<-c(1.0929, 3.0553, 2.0642, 1.1874)
+se<-c(0.6556, 0.8716, 0.7007, 0.3665)
+
+boxdata<-cbind(name,cbind(effect, se))
+boxdata<-as.data.frame(boxdata)
+boxdata$effect<-effect
+boxdata$se<-se
+boxdata$name<-factor(boxdata$name, levels = name)
+ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
+  geom_point(stat = 'identity',size = 6.18)+
+  geom_line(aes(x = name, y = effect))+
+  geom_errorbar(aes(ymin = effect - 2*se, ymax = effect + 2*se),width = 0,size = 1,color = 'black')+
+  #theme_classic()+
+  scale_color_gradient(low = "#2166AC", high = "#B2182B")
+
+
+```
+
+
+```{R}
+
+temp1<-shrubrmf[shrubrmf$Annual_Mean_Temperature<(0),]
+temp1$cate<-'Less than 0'
+
+summary(lm(rmf~cnratio,data = shrubrmf))
+
+temp2<-shrubrmf[shrubrmf$Annual_Mean_Temperature>=0&shrubrmf$Annual_Mean_Temperature<5,]
+temp2$cate<-'0 to 5'
+summary(lm(rmf~cnratio,data = temp2))
+
+
+temp3<-shrubrmf[shrubrmf$Annual_Mean_Temperature>=5&shrubrmf$Annual_Mean_Temperature<10,]
+temp3$cate<-'5 to 10'
+summary(lm(rmf~cnratio,data = temp3))
+
+
+
+
+temp4<-shrubrmf[shrubrmf$Annual_Mean_Temperature>=10,]
+temp4$cate<-'Higher than 10'
+summary(lm(rmf~cnratio,data = temp4))
+
+
+
+
+
+
+name<-c('Less than 0', '0 to 5', '5 to 10', 'Higher than 10')
+effect<-c(1.2713, 2.3990, -0.3427, -2.017)
+se<-c(0.2509, 0.7352, 1.1899, 1.214)
+
+boxdata<-cbind(name,cbind(effect, se))
+boxdata<-as.data.frame(boxdata)
+boxdata$effect<-effect
+boxdata$se<-se
+
+boxdata$name<-factor(boxdata$name, levels = c('Less than 0', '0 to 5','5 to 10', 'Higher than 10'))
+
+ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
+  geom_point(stat = 'identity',size = 6.18)+
+  geom_errorbar(aes(ymin = effect - 2*se, ymax = effect + 2*se),width = 0,size = 1,color = 'black')+
+  #theme_classic()+
+  scale_color_gradient(low = "#2166AC", high = "#B2182B")
+```
+
+
+```{R}
+library(ggpubr)
+
+ggarrange(p1,p7,p4,
+          p2,p8,p5,
+          p3,p9,p6,
+        ncol = 3,
+        nrow = 3)
+```
+
+
+```{R}
+library(ggparty)
+library(partykit)
+```
+
+
+```{R}
+temd<-forestrmf
+temd$Sand_Content_15cm<-100-temd$Sand_Content_15cm
+
+foresttree<-lmtree(rmf~ Annual_Mean_Temperature | soil_moisture+NDVI+(Sand_Content_15cm*(-1)), data = temd,caseweights = FALSE, minsplit = 500, maxdepth = 5,mtry = 3)
+
+#foresttree
+
+p1<-ggparty(foresttree)+
+  geom_edge()+
+  geom_edge_label()+
+  geom_node_splitvar()+
+  geom_node_plot(gglist = list(
+                               geom_smooth(aes(x = Annual_Mean_Temperature,
+                                               y = rmf),
+                                           method = 'lm',color = 'blue'),
+                               theme_classic(),
+                               coord_cartesian(ylim = c(10,40))
+ 
+                 )
+  )
+
+```
+
+
+
+```{R}
+foresttree<-lmtree(rmf~ soil_moisture | Annual_Mean_Temperature+ NDVI+Sand_Content_15cm, data = forestrmf,caseweights = FALSE, minsplit = 500, maxdepth = 4,mtry = 3)
+
+#foresttree
+
+p2<-ggparty(foresttree)+
+  geom_edge()+
+  geom_edge_label()+
+  geom_node_splitvar()+
+  geom_node_plot(gglist = list(
+                               geom_smooth(aes(x = soil_moisture,
+                                               y = rmf),
+                                           method = 'lm',color = 'blue'),
+                               theme_classic(),coord_cartesian(ylim=c(10,40))
+ 
+                 )
+  )
+
+```
+
+
+
+
+```{R}
+foresttree<-lmtree(rmf~ NDVI | Annual_Mean_Temperature+ soil_moisture+Sand_Content_15cm, data = forestrmf,caseweights = FALSE, minsplit = 500, maxdepth = 4,mtry = 2)
+
+#foresttree
+
+p3<-ggparty(foresttree)+
+  geom_edge()+
+  geom_edge_label()+
+  geom_node_splitvar()+
+  geom_node_plot(gglist = list(
+                               geom_smooth(aes(x = NDVI,
+                                               y = rmf),
+                                           method = 'lm',color = 'blue'),
+                               theme_classic(),
+                               coord_cartesian(ylim = c(10,40))
+ 
+                 )
+  )
+
+```
+
+
+
+```{R}
+foresttree<-lmtree(rmf~ Sand_Content_15cm | Annual_Mean_Temperature+ soil_moisture+NDVI, data = forestrmf,caseweights = FALSE, minsplit = 500, maxdepth = 4,mtry = 3)
+
+#foresttree
+
+p4<-ggparty(foresttree)+
+  geom_edge()+
+  geom_edge_label()+
+  geom_node_splitvar()+
+  geom_node_plot(gglist = list(
+                               geom_smooth(aes(x = Sand_Content_15cm,
+                                               y = rmf),
+                                           method = 'lm',color = 'blue'),
+                               theme_classic(),
+                               coord_cartesian(ylim = c(10,40))
+ 
+                 )
+  )
+
+```
+
+```{R}
+
+library(patchwork)
+
+patch<-p1+p2+p3+p4+plot_layout(ncol = 1)
+patch+plot_annotation(tag_levels = 'A')&
+  theme(plot.tag.position = c(0.1,1),
+        plot.tag = element_text(size = 15))
+
+```
+
+
+
+
+
+```{R}
+foresttree<-lmtree(rmf~ Annual_Mean_Temperature | soil_moisture+NDVI+Aridity_Index, data = grassrmf,caseweights = FALSE, minsplit = 120, maxdepth = 4,mtry = 3)
+
+#foresttree
+
+p1<-ggparty(foresttree)+
+  geom_edge()+
+  geom_edge_label()+
+  geom_node_splitvar()+
+  geom_node_plot(gglist = list(
+                               geom_smooth(aes(x = Annual_Mean_Temperature,
+                                               y = rmf),
+                                           method = 'lm',color = 'blue'),
+                               theme_classic(),
+                               coord_cartesian(ylim = c(25,100))
+ 
+                 )
+  )
+
+```
+
+
+```{R}
+foresttree<-lmtree(rmf~ soil_moisture | Annual_Mean_Temperature+Aridity_Index+NDVI, data = grassrmf,caseweights = FALSE, minsplit = 120, maxdepth = 4,mtry = 2)
+
+#foresttree
+
+p2<-ggparty(foresttree)+
+  geom_edge()+
+  geom_edge_label()+
+  geom_node_splitvar()+
+  geom_node_plot(gglist = list(
+                               geom_smooth(aes(x = soil_moisture,
+                                               y = rmf),
+                                           method = 'lm',color = 'blue'),
+                               theme_classic(),
+                               coord_cartesian(ylim = c(25,100))
+ 
+                 )
+  )
+
+```
+
+
+```{R}
+foresttree<-lmtree(rmf~ Aridity_Index | Annual_Mean_Temperature+ soil_moisture+NDVI, data = grassrmf,caseweights = FALSE, minsplit = 120, maxdepth = 4,mtry = 3)
+
+#foresttree
+
+p3<-ggparty(foresttree)+
+  geom_edge()+
+  geom_edge_label()+
+  geom_node_splitvar()+
+  geom_node_plot(gglist = list(
+                               geom_smooth(aes(x = Aridity_Index,
+                                               y = rmf),
+                                           method = 'lm',color = 'blue'),
+                               theme_classic(),
+                               coord_cartesian(xlim = c(0,20000),ylim = c(25,100))
+ 
+                 )
+  )
+
+```
+
+```{R}
+foresttree<-lmtree(rmf~ NDVI | Annual_Mean_Temperature+ soil_moisture+Aridity_Index, data = grassrmf,caseweights = FALSE, minsplit = 120, maxdepth = 4,mtry = 1)
+
+#foresttree
+
+p4<-ggparty(foresttree)+
+  geom_edge()+
+  geom_edge_label()+
+  geom_node_splitvar()+
+  geom_node_plot(gglist = list(
+                               geom_smooth(aes(x = NDVI,
+                                               y = rmf),
+                                           method = 'lm',color = 'blue'),
+                               theme_classic(),
+                               coord_cartesian(ylim = c(25,100))
+ 
+                 )
+  )
+
+```
+
+
+```{R}
+patch<-p1+p2+p3+p4+plot_layout(ncol = 1)
+patch+plot_annotation(tag_levels = 'A')&
+  theme(plot.tag.position = c(0.1,1),
+        plot.tag = element_text(size = 15))
+
+```
+
+
+
+
+```{R}
+foresttree<-lmtree(rmf~ Annual_Mean_Temperature | soil_moisture+Aridity_Index+NDVI, data = shrubrmf,caseweights = FALSE, minsplit = 30, maxdepth = 4,mtry = 3)
+
+#foresttree
+
+p1<-ggparty(foresttree)+
+  geom_edge()+
+  geom_edge_label()+
+  geom_node_splitvar()+
+  geom_node_plot(gglist = list(
+                               geom_smooth(aes(x = Annual_Mean_Temperature,
+                                               y = rmf),
+                                           method = 'lm',color = 'blue'),
+                               theme_classic(),
+                               coord_cartesian(ylim = c(20,90))
+ 
+                 )
+  )
+
+```
+
+```{R}
+set.seed(1)
+foresttree<-lmtree(rmf~ soil_moisture | Annual_Mean_Temperature+Aridity_Index+NDVI, data = shrubrmf,caseweights = FALSE, minsplit = 30, maxdepth = 4,mtry = 2)
+
+#foresttree
+
+p2<-ggparty(foresttree)+
+  geom_edge()+
+  geom_edge_label()+
+  geom_node_splitvar()+
+  geom_node_plot(gglist = list(
+                               geom_smooth(aes(x = soil_moisture,
+                                               y = rmf),
+                                           method = 'lm',color = 'blue'),
+                               theme_classic(),
+                               coord_cartesian(ylim = c(20,90))
+ 
+                 )
+  )
+
+```
+
+
+```{R}
+set.seed(1)
+foresttree<-lmtree(rmf~ Aridity_Index | Annual_Mean_Temperature+soil_moisture+NDVI, data = shrubrmf,caseweights = FALSE, minsplit = 30, maxdepth = 5,mtry = 3)
+
+#foresttree
+
+p3<-ggparty(foresttree)+
+  geom_edge()+
+  geom_edge_label()+
+  geom_node_splitvar()+
+  geom_node_plot(gglist = list(
+                               geom_smooth(aes(x = Aridity_Index,
+                                               y = rmf),
+                                           method = 'lm',color = 'blue'),
+                               theme_classic(),
+                               coord_cartesian(ylim = c(20,90))
+ 
+                 )
+  )
+
+```
+
+
+```{R}
+set.seed(1)
+foresttree<-lmtree(rmf~ NDVI | Annual_Mean_Temperature+soil_moisture+Aridity_Index, data = shrubrmf,caseweights = FALSE, minsplit = 30, maxdepth = 4,mtry = 1)
+
+#foresttree
+
+p4<-ggparty(foresttree)+
+  geom_edge()+
+  geom_edge_label()+
+  geom_node_splitvar()+
+  geom_node_plot(gglist = list(
+                               geom_smooth(aes(x = NDVI,
+                                               y = rmf),
+                                           method = 'lm',color = 'blue'),
+                               theme_classic(),
+                               coord_cartesian(ylim = c(20,90))
+ 
+                 )
+  )
+
+```
+
+
+```{R}
+patch<-p1+p2+p3+p4+plot_layout(ncol = 1)
+patch+plot_annotation(tag_levels = 'A')&
+  theme(plot.tag.position = c(0.1,1),
+        plot.tag = element_text(size = 15))
+
+```
+
+
+
+
+
+
