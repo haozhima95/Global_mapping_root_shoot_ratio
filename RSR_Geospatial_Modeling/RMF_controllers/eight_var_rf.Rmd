@@ -1,0 +1,258 @@
+---
+title: "play_with_data_var_importance"
+author: "Haozhi Ma"
+date: "7/16/2020"
+output: html_document
+---
+
+This script is used for choosing important variables from random forest.
+
+Forest
+
+```{R}
+forestrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_rsr_sample_for_grsearch_20200517.csv')
+names(forestrmf)
+
+```
+
+
+library
+
+```{R}
+library(data.table)
+library(h2o)
+library(raster)
+library(tictoc)
+library(foreach)
+library(doParallel)
+library(tidyverse)
+
+```
+
+
+```{R}
+bands<-subset(forestrmf, select = c(Annual_Mean_Temperature, Aridity_Index, soil_moisture, Sand_Content_15cm, Depth_to_Bedrock, cnratio, NDVI, Tree_Density))
+bandnames<-names(bands)
+print(bandnames)
+
+```
+
+
+```{R}
+rawmatrix<-forestrmf
+
+```
+
+
+set the name of the dependent variable
+
+```{R}
+vartomodel<-'rmf'
+```
+select the bands from the regression matrix
+```{R}
+regressionmatrix<-rawmatrix %>%
+  select(bandnames, vartomodel)
+```
+
+```{R}
+localH2O<-h2o.init(nthreads = 7, max_mem_size = '10g', ignore_config = TRUE)
+
+```
+
+import the regression matrix
+```{R}
+regmatrixh2o<-as.h2o(regressionmatrix, destination_frame = 'regMatrixH2O')
+```
+
+
+Run the model
+
+
+```{R}
+rf_model<-h2o.randomForest(
+  y = vartomodel,
+  training_frame = regmatrixh2o,
+  ntrees = 100,
+  sample_rate = 0.632,
+  nfolds = 10,
+  fold_assignment = 'Modulo',
+  keep_cross_validation_predictions = TRUE,
+  seed = 0
+)
+
+```
+
+
+```{R}
+p1<-h2o.varimp_plot(rf_model)
+
+```
+
+
+```{R}
+h2o.r2(rf_model)
+
+```
+
+
+
+Grassland
+
+```{R}
+grassrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_rsr_sample_for_grsearch_20200517.csv')
+names(grassrmf)
+
+```
+
+
+```{R}
+bands<-subset(grassrmf, select = c(Annual_Mean_Temperature, Aridity_Index, soil_moisture, Sand_Content_15cm, Depth_to_Bedrock, cnratio, NDVI, Tree_Density))
+bandnames<-names(bands)
+print(bandnames)
+
+```
+
+
+```{R}
+rawmatrix<-grassrmf
+
+```
+
+
+set the name of the dependent variable
+
+```{R}
+vartomodel<-'rmf'
+```
+select the bands from the regression matrix
+```{R}
+regressionmatrix<-rawmatrix %>%
+  select(bandnames, vartomodel)
+```
+
+```{R}
+localH2O<-h2o.init(nthreads = 7, max_mem_size = '10g', ignore_config = TRUE)
+
+```
+
+
+import the regression matrix
+```{R}
+regmatrixh2o<-as.h2o(regressionmatrix, destination_frame = 'regMatrixH2O')
+```
+
+
+Run the model
+
+
+```{R}
+rf_model<-h2o.randomForest(
+  y = vartomodel,
+  training_frame = regmatrixh2o,
+  ntrees = 100,
+  sample_rate = 0.632,
+  nfolds = 10,
+  fold_assignment = 'Modulo',
+  keep_cross_validation_predictions = TRUE,
+  seed = 0
+)
+
+```
+
+
+```{R}
+p2<-h2o.varimp_plot(rf_model)
+
+```
+
+```{R}
+h2o.r2(rf_model)
+
+```
+
+
+
+
+shrubland
+
+```{R}
+shrubrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_rsr_sample_for_grsearch_20200517.csv')
+names(shrubrmf)
+
+```
+
+
+```{R}
+bands<-subset(shrubrmf, select = c(Annual_Mean_Temperature, Aridity_Index, soil_moisture, Sand_Content_15cm, Depth_to_Bedrock, cnratio, NDVI, Tree_Density))
+bandnames<-names(bands)
+print(bandnames)
+
+```
+
+
+```{R}
+rawmatrix<-shrubrmf
+
+```
+
+
+set the name of the dependent variable
+
+```{R}
+vartomodel<-'rmf'
+```
+select the bands from the regression matrix
+```{R}
+regressionmatrix<-rawmatrix %>%
+  select(bandnames, vartomodel)
+```
+
+```{R}
+localH2O<-h2o.init(nthreads = 7, max_mem_size = '10g', ignore_config = TRUE)
+
+```
+
+
+import the regression matrix
+```{R}
+regmatrixh2o<-as.h2o(regressionmatrix, destination_frame = 'regMatrixH2O')
+```
+
+
+Run the model
+
+
+```{R}
+rf_model<-h2o.randomForest(
+  y = vartomodel,
+  training_frame = regmatrixh2o,
+  ntrees = 100,
+  sample_rate = 0.632,
+  nfolds = 10,
+  fold_assignment = 'Modulo',
+  keep_cross_validation_predictions = TRUE,
+  seed = 0
+)
+
+```
+
+
+```{R}
+p3<-h2o.varimp_plot(rf_model)
+
+```
+
+
+```{R}
+h2o.r2(rf_model)
+
+```
+
+
+
+
+
+
+
+
