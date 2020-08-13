@@ -5,18 +5,20 @@ date: "7/16/2020"
 output: html_document
 ---
 
-This script is used for choosing important variables from random forest.
+### This script is used for showing important variables from random forest. Eight chosen variables are used here for randomforest model training.
 
 Forest
 
+
+Load the dataset.
 ```{R}
 forestrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_rsr_sample_for_grsearch_20200517.csv')
-names(forestrmf)
+names(forestrmf) # See the name of columns.
 
 ```
 
 
-library
+Import R pacakges.
 
 ```{R}
 library(data.table)
@@ -29,7 +31,7 @@ library(tidyverse)
 
 ```
 
-
+Select training variables.
 ```{R}
 bands<-subset(forestrmf, select = c(Annual_Mean_Temperature, Aridity_Index, soil_moisture, Sand_Content_15cm, Depth_to_Bedrock, cnratio, NDVI, Tree_Density))
 bandnames<-names(bands)
@@ -60,7 +62,7 @@ localH2O<-h2o.init(nthreads = 7, max_mem_size = '10g', ignore_config = TRUE)
 
 ```
 
-import the regression matrix
+Import the regression matrix
 ```{R}
 regmatrixh2o<-as.h2o(regressionmatrix, destination_frame = 'regMatrixH2O')
 ```
@@ -68,7 +70,9 @@ regmatrixh2o<-as.h2o(regressionmatrix, destination_frame = 'regMatrixH2O')
 
 Run the model
 
+Except number of trees, all the hyperparameters are set as default.
 
+For detail see ?h2o.randomForest
 ```{R}
 rf_model<-h2o.randomForest(
   y = vartomodel,
@@ -82,14 +86,14 @@ rf_model<-h2o.randomForest(
 )
 
 ```
-
+Get the variable importance matrix from this trained model.
 
 ```{R}
 p1<-h2o.varimp_plot(rf_model)
 
 ```
 
-
+See the R square to check the model performance.
 ```{R}
 h2o.r2(rf_model)
 
@@ -98,6 +102,8 @@ h2o.r2(rf_model)
 
 
 Grassland
+
+Similar approach without note.
 
 ```{R}
 grassrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_rsr_sample_for_grsearch_20200517.csv')
@@ -175,6 +181,8 @@ h2o.r2(rf_model)
 
 
 shrubland
+
+Similar approach without note.
 
 ```{R}
 shrubrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_rsr_sample_for_grsearch_20200517.csv')
