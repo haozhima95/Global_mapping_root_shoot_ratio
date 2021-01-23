@@ -1,0 +1,286 @@
+---
+title: "forest_grsearch_rsr"
+author: "Haozhi Ma"
+date: "5/7/2020"
+output: html_document
+---
+
+
+
+
+```{R}
+library(data.table)
+library(h2o)
+library(raster)
+library(tictoc)
+library(foreach)
+library(doParallel)
+library(tidyverse)
+```
+
+
+```{R}
+forest.rsr.grsearch<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_rsr_sample_for_grsearch_20200517.csv')
+
+```
+
+```{R}
+names(forest.rsr.grsearch)
+median(forest.rsr.grsearch$ratio)
+mad(forest.rsr.grsearch$ratio)
+mean(forest.rsr.grsearch$ratio)
+```
+```{R}
+library(ggplot2)
+ggplot(forest.rsr.grsearch, aes(soil_moisture))+
+  geom_histogram()
+mean(forest.rsr.grsearch$soil_moisture)
+max(forest.rsr.grsearch$soil_moisture)
+```
+
+```{R}
+bands<-subset(forest.rsr.grsearch, select = -c(system.index,latitude,longitude,index,Pixel_Lat, Pixel_Long,latitude_209564535,longitude_209564535,ratio,.geo,Global_Biomass_IPCC,X,X_1,Abs_Lat,rmf))
+bandnames<-names(bands)
+print(bandnames)
+
+```
+
+
+```{R}
+rawmatrix<-forest.rsr.grsearch
+
+```
+
+
+
+set the name of the dependent variable
+
+```{R}
+vartomodel<-'rmf'
+```
+select the bands from the regression matrix
+```{R}
+regressionmatrix<-rawmatrix %>%
+  select(bandnames, vartomodel)
+```
+
+```{R}
+localH2O<-h2o.init(nthreads = 7, max_mem_size = '10g', ignore_config = TRUE)
+
+```
+
+
+import the regression matrix
+```{R}
+regmatrixh2o<-as.h2o(regressionmatrix, destination_frame = 'regMatrixH2O')
+```
+
+
+set grsearch parameters
+
+```{R}
+rf.params<-list(ntrees = c(50,100,150),
+                mtries = c(2:10),
+                min_rows = c(2:5)
+                )
+
+```
+
+set grsearch criteria
+
+```{R}
+search.criteria<-list(strategy = 'RandomDiscrete', max_models = 150, seed = 0, max_runtime_secs = 3600)
+
+
+```
+
+
+
+perform rf grsearch across parameters
+
+```{R}
+rf.grid<-h2o.grid('randomForest',
+                  y = vartomodel,
+                  grid_id = 'rf.grid',
+                  training_frame = regmatrixh2o,
+                  seed = 0,
+                  hyper_params = rf.params,
+                  sample_rate = 0.632,
+                  nfolds = 10,
+                  fold_assignment = 'AUTO',
+                  keep_cross_validation_predictions = TRUE,
+                  keep_cross_validation_fold_assignment = TRUE,
+                  search_criteria = search.criteria)
+```
+
+
+
+retrieve grid searched model performance sort by RMSE/R2
+
+
+```{R}
+rf.grid.perf<-h2o.getGrid(grid_id = 'rf.grid',
+                          sort_by = 'R2',
+                          decreasing = TRUE)
+
+```
+
+
+
+
+
+```{R}
+print(rf.grid.perf@summary_table)
+
+```
+
+
+```{R}
+write.csv(rf.grid.perf@summary_table,'C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_rfgrsearch_r2_20200517.csv')
+```
+
+grab the best models,
+
+```{R}
+
+for(i in 1:10){
+  bestrf<-h2o.getModel(rf.grid.perf@model_ids[[i]])
+
+h2o.saveModel(object = bestrf, path = 'C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\best_forest_models',force = TRUE)
+
+}
+
+```
+
+
+
+
+```{R}
+bestrf<-h2o.getModel(rf.grid.perf@model_ids[[1]])
+
+h2o.cross_validation_holdout_predictions(bestrf)
+
+```
+
+loop the best model cv predictions
+
+
+```{R}
+cvprediction<-as.data.frame(regressionmatrix$rmf)
+for(i in 1:10){
+  bestrf<-h2o.getModel(rf.grid.perf@model_ids[[i]])
+  
+  cvprediction[,i+1]<-as.data.frame(h2o.cross_validation_holdout_predictions(bestrf))
+}
+head(cvprediction)
+```
+
+```{R}
+cvprediction$predictmean<-rowMeans(cvprediction[,-1])
+head(cvprediction)
+```
+
+```{R}
+
+write.csv(cvprediction, 'C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_cvprediction_20200821.csv')
+
+```
+
+
+r2 of best performing RF
+
+```{R}
+h2o.r2(bestrf, xval = TRUE)
+
+```
+variable importance metrics
+
+```{R}
+h2o.varimp_plot(bestrf)
+h2o.varimp(bestrf)$variable
+```
+
+
+
+doing plots
+
+
+```{R}
+fullprediction<-as.data.frame(h2o.predict(bestrf,regmatrixh2o))
+
+trainandpredicted<-as.data.frame(fullprediction)
+
+trainandpredicted$train<-regressionmatrix[[vartomodel]]
+
+```
+
+```{R}
+coef_det <- function(xtrue, xpred){
+    return(1-sum((xtrue-xpred)^2)/sum((xtrue-mean(xtrue))^2))
+}
+
+```
+
+```{R}
+coef_det(cvprediction$`regressionmatrix$rmf`,cvprediction$predictmean)
+
+```
+
+```{R}
+
+for(i in 1:10){
+  bestrf<-h2o.getModel(rf.grid.perf@model_ids[[i]])
+
+  fullprediction<-as.data.frame(h2o.predict(bestrf,regmatrixh2o))
+
+  trainandpredicted<-as.data.frame(fullprediction)
+
+  trainandpredicted$train<-regressionmatrix[[vartomodel]]
+
+  print(coef_det(trainandpredicted$train, trainandpredicted$predict))
+
+}
+
+```
+
+```{R}
+h2o.shutdown(prompt = FALSE)
+
+```
+
+
+define palette
+
+```{R}
+paletteForUse <- c('#d10000', '#ff6622', '#ffda21', '#33dd00', '#1133cc', '#220066', '#330044')
+colors <-  colorRampPalette(paletteForUse)(256)
+
+cvprediction$dens <- col2rgb(densCols(cvprediction$`regressionmatrix$rmf`, cvprediction$predictmean))[1,] + 1L
+cvprediction$colors = colors[cvprediction$dens]
+
+#summary(lm(predict ~ train, data = trainandpredicted))
+
+```
+
+```{R}
+ggplot(cvprediction, 
+                      aes(x = cvprediction$predictmean, 
+                          y = cvprediction$`regressionmatrix$rmf`)) +
+  geom_point(color = cvprediction$colors) +
+  labs(x = "Predicted",
+       y = "Observed") +
+  #coord_cartesian(xlim = c(0,6), ylim = c(0,6)) +
+  stat_smooth(se = T,
+              colour = "black",
+              size = 0.5,
+             method = "lm") +
+  geom_abline(slope = 1,
+              intercept = 0,
+              na.rm = FALSE, 
+              show.legend = NA, 
+              linetype = "dashed") +
+  theme_bw()
+
+```
+
+
