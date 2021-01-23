@@ -6,8 +6,10 @@ output: html_document
 ---
 
 
+This script is used for an offline grid search to find the best models that could fit forest training dataset. Thus we could find the best fit hyperparameters that we can use for mapping.
 
 
+Load the package
 ```{R}
 library(data.table)
 library(h2o)
@@ -17,13 +19,14 @@ library(foreach)
 library(doParallel)
 library(tidyverse)
 ```
-
+Load the dataset. Here I put forest as an example. Same procedure can be replaced by grassland or shrubland datset. 
 
 ```{R}
-forest.rsr.grsearch<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_rsr_sample_for_grsearch_20200517.csv')
+forest.rsr.grsearch<-read.csv('Forest training dataset')
 
 ```
 
+Check the basic structure of the dataset.
 ```{R}
 names(forest.rsr.grsearch)
 median(forest.rsr.grsearch$ratio)
@@ -37,6 +40,8 @@ ggplot(forest.rsr.grsearch, aes(soil_moisture))+
 mean(forest.rsr.grsearch$soil_moisture)
 max(forest.rsr.grsearch$soil_moisture)
 ```
+
+Select bands.
 
 ```{R}
 bands<-subset(forest.rsr.grsearch, select = -c(system.index,latitude,longitude,index,Pixel_Lat, Pixel_Long,latitude_209564535,longitude_209564535,ratio,.geo,Global_Biomass_IPCC,X,X_1,Abs_Lat,rmf))
@@ -64,6 +69,7 @@ regressionmatrix<-rawmatrix %>%
   select(bandnames, vartomodel)
 ```
 
+Initialize the local environment. All the parameters here should fit your computer settings.
 ```{R}
 localH2O<-h2o.init(nthreads = 7, max_mem_size = '10g', ignore_config = TRUE)
 
@@ -98,6 +104,7 @@ search.criteria<-list(strategy = 'RandomDiscrete', max_models = 150, seed = 0, m
 
 perform rf grsearch across parameters
 
+Here we should keep cross validation predictions, these predictions will be used for calculating coefficients of determination values. 
 ```{R}
 rf.grid<-h2o.grid('randomForest',
                   y = vartomodel,
@@ -108,8 +115,8 @@ rf.grid<-h2o.grid('randomForest',
                   sample_rate = 0.632,
                   nfolds = 10,
                   fold_assignment = 'AUTO',
-                  keep_cross_validation_predictions = TRUE,
-                  keep_cross_validation_fold_assignment = TRUE,
+                  keep_cross_validation_predictions = TRUE, # Important!
+                  keep_cross_validation_fold_assignment = TRUE, # Important!
                   search_criteria = search.criteria)
 ```
 
@@ -120,7 +127,7 @@ retrieve grid searched model performance sort by RMSE/R2
 
 ```{R}
 rf.grid.perf<-h2o.getGrid(grid_id = 'rf.grid',
-                          sort_by = 'R2',
+                          sort_by = 'R2', # This is also coefficient of determinaion values
                           decreasing = TRUE)
 
 ```
@@ -134,7 +141,7 @@ print(rf.grid.perf@summary_table)
 
 ```
 
-
+Save the best model hyperparameters.
 ```{R}
 write.csv(rf.grid.perf@summary_table,'C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_rfgrsearch_r2_20200517.csv')
 ```
@@ -153,7 +160,7 @@ h2o.saveModel(object = bestrf, path = 'C:\\Users\\haozh\\Desktop\\root_ratio\\gr
 ```
 
 
-
+Here explains why saving cross validation predictions is important. We need to ensemble them across ten different models.
 
 ```{R}
 bestrf<-h2o.getModel(rf.grid.perf@model_ids[[1]])
@@ -174,12 +181,14 @@ for(i in 1:10){
 }
 head(cvprediction)
 ```
-
+Average the ten best models. This mean prediction values will be evaluated later.
 ```{R}
 cvprediction$predictmean<-rowMeans(cvprediction[,-1])
 head(cvprediction)
 ```
 
+
+Save it to a file for further use.
 ```{R}
 
 write.csv(cvprediction, 'C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_cvprediction_20200821.csv')
@@ -200,19 +209,7 @@ h2o.varimp_plot(bestrf)
 h2o.varimp(bestrf)$variable
 ```
 
-
-
-doing plots
-
-
-```{R}
-fullprediction<-as.data.frame(h2o.predict(bestrf,regmatrixh2o))
-
-trainandpredicted<-as.data.frame(fullprediction)
-
-trainandpredicted$train<-regressionmatrix[[vartomodel]]
-
-```
+Here is the function that we calculate the coefficient of determination values. 
 
 ```{R}
 coef_det <- function(xtrue, xpred){
@@ -220,28 +217,12 @@ coef_det <- function(xtrue, xpred){
 }
 
 ```
-
+Get the R sqaure. Note here is R sqaure is the comparison of the pairs of empirical rmf and predictions with the curve line "y = x" 
 ```{R}
 coef_det(cvprediction$`regressionmatrix$rmf`,cvprediction$predictmean)
 
 ```
 
-```{R}
-
-for(i in 1:10){
-  bestrf<-h2o.getModel(rf.grid.perf@model_ids[[i]])
-
-  fullprediction<-as.data.frame(h2o.predict(bestrf,regmatrixh2o))
-
-  trainandpredicted<-as.data.frame(fullprediction)
-
-  trainandpredicted$train<-regressionmatrix[[vartomodel]]
-
-  print(coef_det(trainandpredicted$train, trainandpredicted$predict))
-
-}
-
-```
 
 ```{R}
 h2o.shutdown(prompt = FALSE)
