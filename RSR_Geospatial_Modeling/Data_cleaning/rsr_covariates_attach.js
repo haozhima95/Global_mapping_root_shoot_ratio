@@ -4,7 +4,18 @@
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
 
 // Choose the layers that cover the most records
-comp = comp.addBands(soil_moisture);
+var comp = ee.Image("users/haozhima95/Devin_environment_composite_20190218"),
+    soil_moisture = ee.Image("users/haozhima95/wld_soil_moisture"),
+    water_depth = ee.Image("users/haozhima95/water_depth"),
+    forest = ee.FeatureCollection("users/haozhima95/rootshootratio/forest_aggregated_cleaned_20200517"),
+    grass = ee.FeatureCollection("users/haozhima95/rootshootratio/grass_aggregated_cleaned_20200517"),
+    shrub = ee.FeatureCollection("users/haozhima95/rootshootratio/shrub_aggregated_cleaned_20200517");
+var tn = ee.Image('users/haozhima95/total_nitrogen_soilgrids_0_to_200cm');
+
+var cnratio = ee.Image('users/haozhima95/cnratio_from_caesar').rename('cnratio');
+
+
+    comp = comp.addBands(soil_moisture);
     comp = comp.addBands(water_depth);
 
 // Here we need to check the coverage of sampled points
@@ -75,17 +86,17 @@ Export.table.toDrive({
 Export.table.toAsset({
   collection:sample_forest,
   description:'forest_rsr_sample_for_grsearch_20190122',
-  assetId:'users/haozhima95/rootshootratio/forest_rsr_sample_for_grsearch_20191022'
+  assetId:'your directory/forest_rsr_sample_for_grsearch_20191022'
 });
 
 Export.table.toAsset({
   collection:sample_grass,
   description:'grass_rsr_sample_for_grsearch_20190122',
-  assetId:'users/haozhima95/rootshootratio/grass_rsr_sample_for_grsearch_20191022'
+  assetId:'your directory/grass_rsr_sample_for_grsearch_20191022'
 });
 
 Export.table.toAsset({
   collection:sample_shrub,
   description:'shrub_rsr_sample_for_grsearch_20191024',
-  assetId:'users/haozhima95/rootshootratio/shrub_rsr_sample_for_grsearch_20191024'
+  assetId:'your directory/shrub_rsr_sample_for_grsearch_20191024'
 });
