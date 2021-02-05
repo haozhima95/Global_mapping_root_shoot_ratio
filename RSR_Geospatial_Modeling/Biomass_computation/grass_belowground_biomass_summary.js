@@ -2,7 +2,7 @@
 
 // set the file path
 
-var st = 'users/haozhima95/rootshootratio/';
+var st = 'your directory/';
 
 // Set the worldwide polygon.
 
