@@ -17,7 +17,7 @@ var agb = ee.Image('users/haozhima95/abovegrassbiomass_20200501');
 for(var i = 1; i< 11; i++){
   // load the rsr layers.
   var rmf = ee.Image(st+'grass_rmf_model_aggregate_first_'+i+'_20200517');
-      rsr = rsr.divide(ee.Image(100).subtract(rsr));
+  var rsr = rmf.divide(ee.Image(100).subtract(rmf));
   // Get the belowground biomass density.
   var bgb = agb.multiply(rsr);
   
