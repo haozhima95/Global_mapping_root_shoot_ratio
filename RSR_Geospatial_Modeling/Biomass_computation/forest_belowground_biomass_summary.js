@@ -1,4 +1,4 @@
-// This is script is used for forest biomass density layers.
+// This is script is used for forest biomass density layers in Google Earth Engine.
 
 // set the file path
 
@@ -44,7 +44,7 @@ var bgbmax = bgbcollection.reduce(ee.Reducer.max());
 
 var bgbstd = bgbcollection.reduce(ee.Reducer.stdDev());
 
-// Get the vc
+// Get the variation coefficient (standard deviation divided by mean).
 
 var bgbvc = bgbstd.divide(bgbmean);
 
@@ -71,7 +71,7 @@ Export.image.toAsset({
     crsTransform:[0.008333333333333333,0,-180,0,-0.008333333333333333,90],
 	  maxPixels: 1e13
   });
-// The vc
+// The variation coefficient.
 Export.image.toAsset({
     image:bgbvc,
     description:'forest_belowground_biomass_density_vc_20200501',
