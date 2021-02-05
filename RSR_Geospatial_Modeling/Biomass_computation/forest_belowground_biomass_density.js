@@ -16,8 +16,8 @@ var treeagb = ee.Image(st+'abovetreebiomass_20200501');
 
 for(var i = 1; i< 11; i++){
   // load the rsr layers.
-  var rsr = ee.Image(st+'forest_rmf_model_aggregate_first_'+i+'_20200517');
-      rsr = rsr.divide(ee.Image(100).subtract(rsr));
+  var rmf = ee.Image(st+'forest_rmf_model_aggregate_first_'+i+'_20200517');
+  var rsr = rmf.divide(ee.Image(100).subtract(rmf));
       Map.addLayer(rsr);
   // Get the belowground biomass density.
   var bgb = treeagb.multiply(rsr);
