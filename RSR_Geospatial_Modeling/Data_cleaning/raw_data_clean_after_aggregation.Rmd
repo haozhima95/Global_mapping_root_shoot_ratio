@@ -5,7 +5,7 @@ date: "11/12/2019"
 output: html_document
 ---
 
-After the aggregation, here we test the outliers
+After the aggregation, here we filter the outliers
 
 add a world map
 ```{R}
@@ -20,22 +20,22 @@ worlddata <- map_data('world')
 ```{R}
 library(ggplot2)
 
-rsr_aggregated<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\raw_data\\forest_tropical_raw_aggregated.csv')
+rsr_aggregated<-read.csv('forest_tropical_raw_aggregated.csv') # Load the data output from the script 'RSR_aggregate_by_coordinates_by_biome.ipynb'.
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated, aes(x = longitude, y = latitude,color = ratio))+
-  scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
-uplevel<-1.2
+  scale_colour_gradientn(colors = rainbow(10, end = 4/6))) # Check the distribution on the map.
+uplevel<-1.2 # the outlier threshold.
 print(paste0('forest','__',uplevel))
 print(ggplot(rsr_aggregated)+
         geom_histogram(aes(ratio),binwidth = 0.1)+
-        geom_vline(xintercept = uplevel))
+        geom_vline(xintercept = uplevel)) # Check if the outlier setting is reasonable.
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated[rsr_aggregated$ratio>=uplevel,], aes(x = longitude, y = latitude,color = ratio))+
-  scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
+  scale_colour_gradientn(colors = rainbow(10, end = 4/6))) # Check the outlier distribution.
 rsr_aggregated_cleaned<-rsr_aggregated[rsr_aggregated$ratio<uplevel,]
-write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\forest_tropical_cleaned_aggregated_first.csv')
+write.csv(rsr_aggregated_cleaned, 'forest_tropical_cleaned_aggregated_first.csv') # Dataset output for further analysis.
 
 ```
 
@@ -44,23 +44,23 @@ write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleane
 ```{R}
 library(ggplot2)
 
-rsr_aggregated<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\raw_data\\forest_temperate_raw_aggregated.csv')
+rsr_aggregated<-read.csv('forest_temperate_raw_aggregated.csv') # Load the data
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated, aes(x = longitude, y = latitude,color = ratio))+
-  scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
-uplevel<-1.2
+  scale_colour_gradientn(colors = rainbow(10, end = 4/6))) # Check the distribution.
+uplevel<-1.2 # Set the outlier threshold.
 print(paste0('forest','__',uplevel))
 print(ggplot(rsr_aggregated)+
         geom_histogram(aes(ratio),binwidth = 0.1)+
-        geom_vline(xintercept = uplevel))
+        geom_vline(xintercept = uplevel)) # Check the position of outlier threshold. 
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated[rsr_aggregated$ratio>uplevel,], aes(x = longitude, y = latitude,color = ratio))+
-  scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
+  scale_colour_gradientn(colors = rainbow(10, end = 4/6))) # Outlier distribution
 
 rsr_aggregated_cleaned<-rsr_aggregated[rsr_aggregated$ratio<uplevel,]
-write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\forest_temperate_cleaned_aggregated_first.csv')
+write.csv(rsr_aggregated_cleaned, 'forest_temperate_cleaned_aggregated_first.csv') # Save the dataset
 
 ```
 
@@ -69,7 +69,7 @@ write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleane
 ```{R}
 library(ggplot2)
 
-rsr_aggregated<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\raw_data\\forest_boreal_raw_aggregated.csv')
+rsr_aggregated<-read.csv('forest_boreal_raw_aggregated.csv')
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated, aes(x = longitude, y = latitude,color = ratio))+
@@ -84,7 +84,7 @@ print(ggplot()+
   geom_point(data = rsr_aggregated[rsr_aggregated$ratio>uplevel,], aes(x = longitude, y = latitude,color = ratio))+
   scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
 rsr_aggregated_cleaned<-rsr_aggregated[rsr_aggregated$ratio<uplevel,]
-write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\forest_boreal_cleaned_aggregated_first.csv')
+write.csv(rsr_aggregated_cleaned, 'forest_boreal_cleaned_aggregated_first.csv')
 
 ```
 
@@ -93,7 +93,7 @@ write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleane
 ```{R}
 library(ggplot2)
 
-rsr_aggregated<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\raw_data\\forest_med_raw_aggregated.csv')
+rsr_aggregated<-read.csv('forest_med_raw_aggregated.csv')
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated, aes(x = longitude, y = latitude,color = ratio))+
@@ -109,7 +109,7 @@ print(ggplot()+
   scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
 
 rsr_aggregated_cleaned<-rsr_aggregated[rsr_aggregated$ratio<uplevel,]
-write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\forest_med_cleaned_aggregated_first.csv')
+write.csv(rsr_aggregated_cleaned, 'forest_med_cleaned_aggregated_first.csv')
 ```
 
 
@@ -118,7 +118,7 @@ write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleane
 ```{R}
 library(ggplot2)
 
-rsr_aggregated<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\raw_data\\forest_flood_raw_aggregated.csv')
+rsr_aggregated<-read.csv('forest_flood_raw_aggregated.csv')
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated, aes(x = longitude, y = latitude,color = ratio))+
@@ -133,7 +133,7 @@ print(ggplot()+
   geom_point(data = rsr_aggregated[rsr_aggregated$ratio>uplevel,], aes(x = longitude, y = latitude,color = ratio))+
   scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
 rsr_aggregated_cleaned<-rsr_aggregated[rsr_aggregated$ratio<uplevel,]
-write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\forest_flood_cleaned_aggregated_first.csv')
+write.csv(rsr_aggregated_cleaned, 'forest_flood_cleaned_aggregated_first.csv')
 
 ```
 
@@ -142,7 +142,7 @@ write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleane
 ```{R}
 library(ggplot2)
 
-rsr_aggregated<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\raw_data\\grass_tropical_raw_aggregated.csv')
+rsr_aggregated<-read.csv('grass_tropical_raw_aggregated.csv')
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated, aes(x = longitude, y = latitude,color = ratio))+
@@ -158,7 +158,7 @@ print(ggplot()+
   scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
 
 rsr_aggregated_cleaned<-rsr_aggregated[rsr_aggregated$ratio<uplevel,]
-write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\grass_tropical_cleaned_aggregated_first.csv')
+write.csv(rsr_aggregated_cleaned, 'grass_tropical_cleaned_aggregated_first.csv')
 ```
 
 #### temperate grasslands
@@ -166,7 +166,7 @@ write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleane
 ```{R}
 library(ggplot2)
 
-rsr_aggregated<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\raw_data\\grass_temperate_raw_aggregated.csv')
+rsr_aggregated<-read.csv('grass_temperate_raw_aggregated.csv')
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated, aes(x = longitude, y = latitude,color = ratio))+
@@ -182,7 +182,7 @@ print(ggplot()+
   scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
 
 rsr_aggregated_cleaned<-rsr_aggregated[rsr_aggregated$ratio<uplevel,]
-write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\grass_temperate_cleaned_aggregated_first.csv')
+write.csv(rsr_aggregated_cleaned, 'grass_temperate_cleaned_aggregated_first.csv')
 ```
 
 #### boreal grasslands
@@ -190,7 +190,7 @@ write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleane
 ```{R}
 library(ggplot2)
 
-rsr_aggregated<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\raw_data\\grass_boreal_raw_aggregated.csv')
+rsr_aggregated<-read.csv('grass_boreal_raw_aggregated.csv')
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated, aes(x = longitude, y = latitude,color = ratio))+
@@ -206,7 +206,7 @@ print(ggplot()+
   scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
 
 rsr_aggregated_cleaned<-rsr_aggregated[rsr_aggregated$ratio<uplevel,]
-write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\grass_boreal_cleaned_aggregated_first.csv')
+write.csv(rsr_aggregated_cleaned, 'grass_boreal_cleaned_aggregated_first.csv')
 
 ```
 
@@ -215,7 +215,7 @@ write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleane
 ```{R}
 library(ggplot2)
 
-rsr_aggregated<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\raw_data\\grass_med_raw_aggregated.csv')
+rsr_aggregated<-read.csv('grass_med_raw_aggregated.csv')
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated, aes(x = longitude, y = latitude,color = ratio))+
@@ -231,7 +231,7 @@ print(ggplot()+
   scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
 
 rsr_aggregated_cleaned<-rsr_aggregated[rsr_aggregated$ratio<uplevel,]
-write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\grass_med_cleaned_aggregated_first.csv')
+write.csv(rsr_aggregated_cleaned, 'grass_med_cleaned_aggregated_first.csv')
 ```
 
 
@@ -241,7 +241,7 @@ write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleane
 ```{R}
 library(ggplot2)
 
-rsr_aggregated<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\raw_data\\grass_flood_raw_aggregated.csv')
+rsr_aggregated<-read.csv('grass_flood_raw_aggregated.csv')
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated, aes(x = longitude, y = latitude,color = ratio))+
@@ -257,7 +257,7 @@ print(ggplot()+
   scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
 
 rsr_aggregated_cleaned<-rsr_aggregated[rsr_aggregated$ratio<uplevel,]
-write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\grass_flood_cleaned_aggregated_first.csv')
+write.csv(rsr_aggregated_cleaned, 'grass_flood_cleaned_aggregated_first.csv')
 ```
 
 
@@ -266,7 +266,7 @@ write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleane
 ```{R}
 library(ggplot2)
 
-rsr_aggregated<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\raw_data\\shrub_tropical_raw_aggregated.csv')
+rsr_aggregated<-read.csv('shrub_tropical_raw_aggregated.csv')
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated, aes(x = longitude, y = latitude,color = ratio))+
@@ -282,7 +282,7 @@ print(ggplot()+
   scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
 
 rsr_aggregated_cleaned<-rsr_aggregated[rsr_aggregated$ratio<uplevel,]
-write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\shrub_tropical_cleaned_aggregated_first.csv')
+write.csv(rsr_aggregated_cleaned, 'shrub_tropical_cleaned_aggregated_first.csv')
 ```
 
 #### temperate shrublands
@@ -290,7 +290,7 @@ write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleane
 ```{R}
 library(ggplot2)
 
-rsr_aggregated<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\raw_data\\shrub_temperate_raw_aggregated.csv')
+rsr_aggregated<-read.csv('shrub_temperate_raw_aggregated.csv')
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated, aes(x = longitude, y = latitude,color = ratio))+
@@ -306,7 +306,7 @@ print(ggplot()+
   scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
 
 rsr_aggregated_cleaned<-rsr_aggregated[rsr_aggregated$ratio<uplevel,]
-write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\shrub_temperate_cleaned_aggregated_first.csv')
+write.csv(rsr_aggregated_cleaned, 'shrub_temperate_cleaned_aggregated_first.csv')
 ```
 
 #### boreal shrublands
@@ -314,7 +314,7 @@ write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleane
 ```{R}
 library(ggplot2)
 
-rsr_aggregated<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\raw_data\\shrub_boreal_raw_aggregated.csv')
+rsr_aggregated<-read.csv('shrub_boreal_raw_aggregated.csv')
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated, aes(x = longitude, y = latitude,color = ratio))+
@@ -331,7 +331,7 @@ print(ggplot()+
   scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
 
 #rsr_aggregated_cleaned<-rsr_aggregated[rsr_aggregated$ratio<uplevel,]
-#write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\shrub_boreal_cleaned_aggregated_first.csv')
+#write.csv(rsr_aggregated_cleaned, 'shrub_boreal_cleaned_aggregated_first.csv')
 ```
 
 
@@ -340,7 +340,7 @@ print(ggplot()+
 ```{R}
 library(ggplot2)
 
-rsr_aggregated<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\raw_data\\shrub_med_raw_aggregated.csv')
+rsr_aggregated<-read.csv('shrub_med_raw_aggregated.csv')
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated, aes(x = longitude, y = latitude,color = ratio))+
@@ -357,7 +357,7 @@ print(ggplot()+
   scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
 
 rsr_aggregated_cleaned<-rsr_aggregated[rsr_aggregated$ratio<uplevel,]
-write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\shrub_med_cleaned_aggregated_first.csv')
+write.csv(rsr_aggregated_cleaned, 'shrub_med_cleaned_aggregated_first.csv')
 ```
 
 #### flooed shrublands
@@ -365,7 +365,7 @@ write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleane
 ```{R}
 library(ggplot2)
 
-rsr_aggregated<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\raw_data\\shrub_flood_raw_aggregated.csv')
+rsr_aggregated<-read.csv('shrub_flood_raw_aggregated.csv')
 print(ggplot()+
   geom_map(data = worlddata, map = worlddata,aes(x = long, y = lat, group = group, map_id = region),fill = 'white',color = '#7f7f7f',size = 0.5)+
   geom_point(data = rsr_aggregated, aes(x = longitude, y = latitude,color = ratio))+
@@ -381,7 +381,7 @@ print(ggplot()+
   scale_colour_gradientn(colors = rainbow(10, end = 4/6)))
 
 rsr_aggregated_cleaned<-rsr_aggregated[rsr_aggregated$ratio<uplevel,]
-write.csv(rsr_aggregated_cleaned, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\shrub_flood_cleaned_aggregated_first.csv')
+write.csv(rsr_aggregated_cleaned, 'shrub_flood_cleaned_aggregated_first.csv')
 ```
 
 Bind all the tables in each biome to tables by vegetation types
@@ -394,44 +394,16 @@ typelist<-c('forest','grass','shrub')
 ```
 ```{R}
 for (tp in typelist){
-  rsr_cleaned<-read.csv(paste0('C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\',tp,'_tropical','_cleaned_aggregated_first.csv'))
+  rsr_cleaned<-read.csv(paste0(tp,'_tropical','_cleaned_aggregated_first.csv'))
   for(st in biomelist){
-    cleaned_addon<-read.csv(paste0('C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\',tp,'_',st, '_cleaned_aggregated_first.csv'))
+    cleaned_addon<-read.csv(paste0(tp,'_',st, '_cleaned_aggregated_first.csv'))
     rsr_cleaned<-rbind(rsr_cleaned,cleaned_addon)
   }
-  write.csv(rsr_cleaned,paste0('C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\',tp,'_aggregated_cleaned_20191022.csv'))
+  write.csv(rsr_cleaned,paste0('tp,'_aggregated_cleaned_','output_time','.csv'))
 }
 
 
 ```
-
-Output as shapefile
-
-```{R}
-library(rgdal)
-for(tp in typelist){
-  rsr.for.shp<-read.csv(paste0('C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data\\',tp,'_aggregated_cleaned_20191022.csv'))
-  index<-c(1:NROW(rsr.for.shp))
-  rsr.for.shp$index<-index
-  rsr.for.shp$long<-rsr.for.shp$longitude
-  rsr.for.shp$lat<-rsr.for.shp$latitude
-  print(head(rsr.for.shp))
-  coordinates(rsr.for.shp)<-~long+lat
-  proj4string(rsr.for.shp)<-CRS('+init=epsg:4326')
-writeOGR(rsr.for.shp, 'C:\\Users\\haozh\\Desktop\\root_ratio\\cleaned_data',paste0(tp,'_aggregated_cleaned_20191024'),'ESRI Shapefile')
-}
-
-
-
-```
-
-
-
-
-
-
-
-
 
 
 
