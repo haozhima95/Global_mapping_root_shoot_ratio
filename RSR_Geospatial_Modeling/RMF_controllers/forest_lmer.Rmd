@@ -7,6 +7,8 @@ output: html_document
 
 ### This script is used for lmer analysis for forest rmfs. This approach is similar to what we did in 'alldata' subsampling analysis. 
 ### The only difference happens in the random effect.
+### Basically the results of this script can produce the forest panenl of Extended Data Fig.3.
+
 
 Load the data
 
