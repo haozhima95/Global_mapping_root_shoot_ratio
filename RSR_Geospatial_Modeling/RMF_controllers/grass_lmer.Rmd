@@ -6,11 +6,12 @@ output: html_document
 ---
 
 ### This script is used for lmer analysis for grassland rmfs. This approach is similar to what we did in 'alldata' subsampling analysis. The only difference happens in the random effect.
-
+#### The results of this script can be seen in the grassland panel of Extended Data Fig.3
 Load the data
 
 ```{R}
-grassds<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_new.csv') # Read the data
+setwd('your directory')
+grassds<-read.csv('grass_new.csv') # Read the data
 grassds$veg.type<-'grass'
 
 # Check the column names.
