@@ -8,6 +8,8 @@ output: html_document
 
 ### This script is used for lmer analysis for shrubland rmfs. This approach is similar to what we did in 'alldata' subsampling analysis. The only difference happens in the random effect.
 
+### The results from this script can be seen in Exteneded Data Fig.3, shrubland panel.
+
 Load the data
 
 ```{R}
