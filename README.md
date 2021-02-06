@@ -1,4 +1,4 @@
-# Global_mapping_root_shoot_ratio
+# Global_mapping_root_mass_fraction
 
 ## This repository contains the code used for the analysis in the paper "The global biogeography of above- versus belowground plant biomass allocation"
 
