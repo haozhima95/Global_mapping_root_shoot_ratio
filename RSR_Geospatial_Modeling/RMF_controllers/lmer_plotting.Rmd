@@ -6,13 +6,14 @@ output: html_document
 ---
 
 ### This script is used for plotting lmer results from different vegetation types and overall results.
-
+#### Using This script, you can create the plots in Extended Data Fig.3.
 
 Load the file.
 
 
 ```{R}
-lmer.results<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\cor_result\\lmer_subsampling.csv')
+setwd('your directory')
+lmer.results<-read.csv('lmer_subsampling.csv')
 # Get a glance of data structure.
 head(lmer.results)
 colnames(lmer.results)
