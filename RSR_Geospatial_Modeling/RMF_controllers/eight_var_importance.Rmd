@@ -7,12 +7,15 @@ output: html_document
 
 ### This script is used for showing important variables from random forest. Eight chosen variables are used here for randomforest model training.
 
+#### You can find Fig 3. A, B and C in this script. 
+
 Forest
 
 
 Load the dataset.
 ```{R}
-forestrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_rsr_sample_for_grsearch_20200517.csv')
+setwd('you directory')
+forestrmf<-read.csv('forest_rsr_sample_for_grsearch_20200517.csv')
 names(forestrmf) # See the name of columns.
 
 ```
@@ -87,7 +90,7 @@ rf_model<-h2o.randomForest(
 
 ```
 Get the variable importance matrix from this trained model.
-
+#### Fig.3 A
 ```{R}
 p1<-h2o.varimp_plot(rf_model)
 
@@ -106,7 +109,7 @@ Grassland
 Similar approach without note.
 
 ```{R}
-grassrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_rsr_sample_for_grsearch_20200517.csv')
+grassrmf<-read.csv('grass_rsr_sample_for_grsearch_20200517.csv')
 names(grassrmf)
 
 ```
@@ -166,7 +169,7 @@ rf_model<-h2o.randomForest(
 
 ```
 
-
+#### Fig.3 C
 ```{R}
 p2<-h2o.varimp_plot(rf_model)
 
@@ -245,7 +248,7 @@ rf_model<-h2o.randomForest(
 
 ```
 
-
+#### Fig.3 B
 ```{R}
 p3<-h2o.varimp_plot(rf_model)
 
