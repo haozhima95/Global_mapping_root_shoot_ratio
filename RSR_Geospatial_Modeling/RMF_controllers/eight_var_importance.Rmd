@@ -188,7 +188,7 @@ shrubland
 Similar approach without note.
 
 ```{R}
-shrubrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_rsr_sample_for_grsearch_20200517.csv')
+shrubrmf<-read.csv('shrub_rsr_sample_for_grsearch_20200517.csv')
 names(shrubrmf)
 
 ```
