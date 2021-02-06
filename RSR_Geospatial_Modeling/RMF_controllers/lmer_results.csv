@@ -1,12 +1,12 @@
 Items,Coefficients,Standard error,P value (if possible),SAC p value,veg.type
-Annual Mean Temperature,-0.142,0.036,0.0106,ò0.0722,Forest
-Aridity Index,0.0287,0.037,0.378,ò0.0726,Forest
-C:N Ratio,0.022,0.027,0.382,ò0.0725,Forest
-NDVI,-0.094,0.034,0.063,ò0.0724,Forest
-Soil Depth to Bedrock,0.152,0.026,0,ò0.0730,Forest
-Soil Moisture,-0.106,0.035,0.048,ò0.0727,Forest
-Soil Sand Content,0.154,0.025,0,ò0.0728,Forest
-Tree Density,-0.031,0.027,0.334,ò0.0723,Forest
+Annual Mean Temperature,-0.142,0.036,0.0106,Ã²0.0722,Forest
+Aridity Index,0.0287,0.037,0.378,Ã²0.0726,Forest
+C:N Ratio,0.022,0.027,0.382,Ã²0.0725,Forest
+NDVI,-0.094,0.034,0.063,Ã²0.0724,Forest
+Soil Depth to Bedrock,0.152,0.026,0,Ã²0.0730,Forest
+Soil Moisture,-0.106,0.035,0.048,Ã²0.0727,Forest
+Soil Sand Content,0.154,0.025,0,Ã²0.0728,Forest
+Tree Density,-0.031,0.027,0.334,Ã²0.0723,Forest
 Annual Mean Temperature,-0.095,0.0445,0.033,0.359,Grassland
 Aridity Index,-0.084,0.048,0.081,0.3586,Grassland
 C:N Ratio,-0.169,0.0429,0,0.3586,Grassland
