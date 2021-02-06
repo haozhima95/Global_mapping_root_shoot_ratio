@@ -1,17 +1,20 @@
 ---
-title: "play_with_forest_sample"
+title: "play_with_sample"
 author: "Haozhi Ma"
 date: "7/8/2020"
 output: html_document
 ---
 
 ### This script is used for data play with sampled RMF and most important variables. 
+##### You can use this script to get Fig 3 (D~L).in our manuscript and Extended Data Fig.4, Fig.5 and Fig.6 in our supplementary material.
+##### For Fig.3 panels, see the arrangement in line 1546. For Extended Data Fig. 4, see the arrangement in line 1660 For Extended Data Fig.5, see the arrangement in line 1863. And for Extended Data Fig.5, see the arrangement in the line 1762. 
 
 Load the data and have a look at histograms
 
 
 ```{R}
-forestrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_rsr_sample_for_grsearch_20200517.csv')
+setwd('your directory')
+forestrmf<-read.csv('forest_rsr_sample_for_grsearch_20200517.csv')
 names(forestrmf)
 ```
 
@@ -302,7 +305,7 @@ p3<-ggplot(newdata,aes(x = moistclass, y = rmf,color = cate))+
 
 
 
-Another possible version...
+Another possible version...(Didn't show in the manuscript)
 
 
 
@@ -478,7 +481,7 @@ For grassland similar approches.
 
 
 ```{R}
-grassrmf<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_rsr_sample_for_grsearch_20200517.csv')
+grassrmf<-read.csv('grass_rsr_sample_for_grsearch_20200517.csv')
 names(grassrmf)
 ```
 
@@ -540,7 +543,7 @@ p4<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect))
   theme(legend.position = 'none', axis.title = element_text(size = 20), axis.text.x = element_text(size = 20, angle = 45, hjust = 1,colour = 'black'), axis.text.y = element_text(size = 20,colour = 'black'))
 ```
 
-See if grassland moisture can change the effect of cnratio on rmf
+See if grassland moisture can change the effect of cnratio on rmf. Not shown in the manuscript.
 ```{R}
 ggplot(data = grassrmf[grassrmf$soil_moisture>=700,], aes(x = cnratio, y = rmf))+
   geom_point()+
@@ -665,7 +668,7 @@ p5<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect))
 ```
 
 
-See in detail how grass rmf change with soil C:N ratio in different temperatures.
+See in detail how grass rmf change with soil C:N ratio in different temperatures. Not shown in the manuscript.
 
 ```{R}
 
@@ -715,7 +718,7 @@ ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect)))+
 
 
 
-The effect of soil moisture in different temperature scenarios.
+The effect of soil moisture in different temperature scenarios. Not shown in the manuscript.
 
 
 ```{R}
@@ -1443,7 +1446,7 @@ p8<-ggplot(data = boxdata, aes(x = name, y = effect, color = effect/abs(effect))
 ```
 
 
-I am pretty curious that how water availability change the effect of cnratio, as water as a means of effective covariate.
+I am pretty curious that how water availability change the effect of cnratio, as water as a means of effective covariate. Not shown in the manuscript.
 
 ```{R}
 ggplot(data = shrubrmf[shrubrmf$soil_moisture>=700,], aes(x = cnratio, y = rmf))+
@@ -1545,9 +1548,9 @@ Arrange the panels.
 ```{R}
 library(ggpubr)
 
-ggarrange(p1,p7,p4,
-          p2,p8,p5,
-          p3,p9,p6,
+ggarrange(p1,p7,p4,# D E F
+          p2,p8,p5, # G H I
+          p3,p9,p6, # J K L 
         ncol = 3,
         nrow = 3)
 ```
@@ -1653,7 +1656,7 @@ p4<-ggparty(foresttree)+
   )
 
 ```
-
+Extended Data Fig.4
 ```{R}
 
 library(patchwork)
@@ -1754,7 +1757,7 @@ p4<-ggparty(foresttree)+
   )
 
 ```
-
+Extended Data Fig.6.
 
 ```{R}
 patch<-p1+p2+p3+p4+plot_layout(ncol = 1)
@@ -1856,7 +1859,7 @@ p4<-ggparty(foresttree)+
 
 ```
 
-
+Extended Data Fig.5
 ```{R}
 patch<-p1+p2+p3+p4+plot_layout(ncol = 1)
 patch+plot_annotation(tag_levels = 'A')&
