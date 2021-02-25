@@ -1,0 +1,915 @@
+---
+title: "model_prediction"
+author: "Haozhi Ma"
+date: "11/7/2019"
+output: html_document
+---
+
+### forest model prediction point plot
+
+
+```{R}
+
+modelprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_250km.csv')
+head(modelprediction)
+#summary(modelprediction$regressionmatrix.rmf)
+paletteForUse <- c('#FF0000',"#FDE725", "#AADC32", "#5DC863", "#27AD81", "#21908C", "#2C728E", "#3B528B", "#472D7B", "#440154")
+colors <-  colorRampPalette(paletteForUse)(256)
+
+
+modelprediction$dens <- col2rgb(densCols(modelprediction$rmf, modelprediction$predicted))[1,]+1L
+modelprediction$colors = colors[modelprediction$dens]
+range(modelprediction$dens)
+quantile(modelprediction$dens,0.9)
+modelprediction[modelprediction$dens >148, 'colors'] = '#BEBEBE'
+
+# summary(lm(rmf ~ rmf_pred_mean, data = modelprediction))
+
+```
+
+```{R}
+
+coef_det <- function(xtrue, xpred){
+    return(1-sum((xtrue-xpred)^2)/sum((xtrue-mean(xtrue))^2))
+}
+
+coef_det(modelprediction$rmf, modelprediction$predicted)
+
+```
+
+
+Making a boxplot that summarizes observation and free prediction.
+
+
+
+
+
+
+
+
+
+
+```{R}
+library(ggplot2)
+
+p1<-ggplot(modelprediction, 
+                      aes(x = predicted, 
+                          y = rmf)) +
+  geom_point(color = modelprediction$colors,size = 2) +
+  labs(x = "Predicted RMF (%)",
+       y = "Observed RMF (%)") +
+  coord_cartesian(xlim = c(0,100), ylim = c(0,100)) +
+  stat_smooth(se = T,
+              colour = "black",
+              size = 0.5,
+              method = "lm") +
+  geom_abline(slope = 1,
+              intercept = 0,
+              na.rm = FALSE, 
+              show.legend = NA, 
+              linetype = "dashed") +
+  #scale_fill_gradientn()
+  theme_classic()+
+  theme(axis.text = element_text(size = 20),axis.title = element_text(size = 20))
+
+
+
+```
+
+
+
+```{R}
+
+Dens2D = ggplot(modelprediction, aes(x=predictmean, y=regressionmatrix.rmf) ) +
+  stat_density_2d(aes(fill = ..level..), geom = "polygon") +
+  scale_fill_distiller(limits = c(0,0.025),palette=4, direction=-1) +
+  #geom_hline(aes(yintercept=4.7))+
+  coord_cartesian(ylim = c(0, 100),xlim = c(0,100))+
+  xlab("Predicted RMF (%)") +
+  ylab("Observed RMF (%)") +
+  stat_smooth(se = T,
+              colour = "black",
+              size = 0.5,
+              method = "lm") +
+  geom_abline(slope = 1,
+              intercept = 0,
+              na.rm = FALSE, 
+              show.legend = NA, 
+              linetype = "dashed") +
+  theme_classic()+
+  theme(axis.text = element_text(size = 20),axis.title = element_text(size = 20))
+
+```
+
+
+
+
+
+### grass model prediction point plot
+
+
+```{R}
+
+modelprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_500km.csv')
+#summary(modelprediction$regressionmatrix.rmf)
+head(modelprediction)
+paletteForUse <- c('#FF0000',"#FDE725", "#AADC32", "#5DC863", "#27AD81", "#21908C", "#2C728E", "#3B528B", "#472D7B", "#440154")
+colors <-  colorRampPalette(paletteForUse)(256)
+
+modelprediction$dens <- col2rgb(densCols(modelprediction$rmf, modelprediction$predicted))[1,] + 1L
+modelprediction$colors = colors[modelprediction$dens]
+
+range(modelprediction$dens)
+quantile(modelprediction$dens,0.9)
+
+modelprediction[modelprediction$dens >146, 'colors'] = '#BEBEBE'
+#summary(lm(rmf~ rmf_pred_mean, data = modelprediction))
+
+
+
+
+```
+
+```{R}
+coef_det(modelprediction$rmf, modelprediction$predicted)
+
+```
+
+
+
+
+```{R}
+library(ggplot2)
+
+p3<-ggplot(modelprediction, 
+                      aes(x = predicted, 
+                          y = rmf)) +
+  geom_point(color = modelprediction$colors,size = 2) +
+  labs(x = "Predicted RMF (%)",
+       y = "Observed RMF (%)") +
+  coord_cartesian(xlim = c(0,100), ylim = c(0,100)) +
+  stat_smooth(se = T,
+              colour = "black",
+              size = 0.5,
+              method = "lm") +
+  geom_abline(slope = 1,
+              intercept = 0,
+              na.rm = FALSE, 
+              show.legend = NA, 
+              linetype = "dashed") +
+  theme_classic()+
+  theme(axis.text = element_text(size = 20),axis.title = element_text(size = 20))
+
+
+
+```
+
+```{R}
+
+Dens2Dgrass = ggplot(modelprediction, aes(x=predictmean, y=regressionmatrix.rmf) ) +
+  stat_density_2d(aes(fill = ..level..), geom = "polygon") +
+  scale_fill_distiller(palette=4, direction=1) +
+  #geom_hline(aes(yintercept=4.7))+
+  #coord_cartesian(ylim = c(0, 10),xlim = c(-4, 19))+
+  xlab("Predicted RMF (%)") +
+  ylab("Observed RMF (%)") +
+  stat_smooth(se = T,
+              colour = "black",
+              size = 0.5,
+              method = "lm") +
+  geom_abline(slope = 1,
+              intercept = 0,
+              na.rm = FALSE, 
+              show.legend = NA, 
+              linetype = "dashed") +
+  theme_classic()+
+  theme(axis.text = element_text(size = 20),axis.title = element_text(size = 20))
+
+```
+
+
+### shrubland model prediction point plots
+
+
+```{R}
+
+modelprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_250km.csv')
+#summary(modelprediction$rmf)
+paletteForUse <- c('#FF0000',"#FDE725", "#AADC32", "#5DC863", "#27AD81", "#21908C", "#2C728E", "#3B528B", "#472D7B", "#440154")
+colors <-  colorRampPalette(paletteForUse)(256)
+
+modelprediction$dens <- col2rgb(densCols(modelprediction$rmf, modelprediction$predicted))[1,] + 1L
+modelprediction$colors = colors[modelprediction$dens]
+range(modelprediction$dens)
+quantile(modelprediction$dens,0.9)
+
+modelprediction[modelprediction$dens >149, 'colors'] = '#BEBEBE'
+#summary(lm(rmf ~ rmf_pred_mean, data = modelprediction))
+
+```
+
+
+```{R}
+coef_det(modelprediction$rmf, modelprediction$predicted)
+
+```
+
+```{R}
+library(ggplot2)
+
+p2<-ggplot(modelprediction, 
+                      aes(x = predicted, 
+                          y = rmf)) +
+  stat_smooth(se = T,
+              colour = "black",
+              size = 0.5,
+              method = "lm") +
+  geom_point(color = modelprediction$colors, size = 2) +
+  labs(x = "Predicted RMF (%)",
+       y = "Observed RMF (%)") +
+  coord_cartesian(xlim = c(0,100), ylim = c(0,100)) +
+  
+  geom_abline(slope = 1,
+              intercept = 0,
+              na.rm = FALSE, 
+              show.legend = NA, 
+              linetype = "dashed") +
+  theme_classic()+
+  theme(axis.text = element_text(size = 20),axis.title = element_text(size = 20))
+
+
+
+```
+
+
+```{R}
+
+Dens2Dshrub = ggplot(modelprediction, aes(x=predictmean, y=regressionmatrix.rmf) ) +
+  stat_density_2d(aes(fill = ..level..), geom = "polygon") +
+  scale_fill_distiller(palette=4, direction=1) +
+  #geom_hline(aes(yintercept=4.7))+
+  #coord_cartesian(ylim = c(0, 10),xlim = c(-4, 19))+
+  xlab("Predicted RMF (%)") +
+  ylab("Observed RMF (%)") +
+  stat_smooth(se = T,
+              colour = "black",
+              size = 0.5,
+              method = "lm") +
+  geom_abline(slope = 1,
+              intercept = 0,
+              na.rm = FALSE, 
+              show.legend = NA, 
+              linetype = "dashed") +
+  theme_classic()+
+  theme(axis.text = element_text(size = 20),axis.title = element_text(size = 20))
+
+```
+
+
+
+
+
+
+
+#### Set the name list
+
+```{R}
+wwfnamelist<-c('Tropical & Subtropical Moist Broadleaf Forests', 
+               'Tropical & Subtropical Dry Broadleaf Forests', 
+               'Tropical & Subtropical Coniferous Forests', 
+               'Temperate Broadleaf & Mixed Forests', 
+               'Temperate Conifer Forests', 
+               'Boreal Forests/Taiga',
+               'Tropical & Subtropical Grasslands, Savannas & Shrublands', 
+               'Temperate Grasslands, Savannas & Shrublands', 
+               'Flooded Grasslandas & Savannas',
+               'Montane Grasslands & Shrublands', 
+               'Tundra', 
+               'Mediterranean Forests, Woodlands & Scrub', 
+               'Deserts & Xeric Shrublands')
+
+```
+
+
+Set the path route.
+
+```{R}
+
+st <- 'C:\\Users\\haozh\\Desktop\\root_ratio\\model_biome_comparison\\20200805\\'
+
+
+```
+
+Set biomelist
+
+```{R}
+forestlist <- c(1,2,4,5,6,12)
+grasslist <- c(7,8,10,11,13)
+shrublist <- c(8,10,11,13)
+
+```
+
+loop the forest
+
+```{R}
+forestrmf <- read.csv(paste0(st,'forest_rmf_biome_',1,'_20200805.csv'))
+forestrmf$biomename <- wwfnamelist[1]
+
+for(i in 2:length(forestlist)){
+  # Load the dataset
+  
+  forestaddon<-read.csv(paste0(st,'forest_rmf_biome_',forestlist[i],'_20200805.csv'))
+  forestaddon$biomename <- wwfnamelist[forestlist[i]]
+  
+  forestrmf<-rbind(forestrmf,forestaddon)
+  print(paste0(forestlist[i],'__',nrow(forestaddon)))
+  
+}
+
+```
+
+```{R}
+grassrmf <- read.csv(paste0(st,'grass_rmf_biome_',7,'_20200805.csv'))
+grassrmf$biomename <- wwfnamelist[7]
+
+for(i in 2:length(grasslist)){
+  # Load the dataset
+  
+  grassaddon<-read.csv(paste0(st,'grass_rmf_biome_',grasslist[i],'_20200805.csv'))
+  grassaddon$biomename <- wwfnamelist[grasslist[i]]
+  
+  grassrmf<-rbind(grassrmf,grassaddon)
+  print(paste0(grasslist[i],'__',nrow(grassaddon)))
+  
+}
+
+```
+
+
+```{R}
+shrubrmf <- read.csv(paste0(st,'shrub_rmf_biome_',8,'_20200805.csv'))
+shrubrmf$biomename <- wwfnamelist[8]
+
+for(i in 2:length(shrublist)){
+  # Load the dataset
+  
+  shrubaddon<-read.csv(paste0(st,'shrub_rmf_biome_',shrublist[i],'_20200805.csv'))
+  shrubaddon$biomename <- wwfnamelist[shrublist[i]]
+  
+  shrubrmf<-rbind(shrubrmf,shrubaddon)
+  print(paste0(shrublist[i],'__',nrow(shrubaddon)))
+  
+}
+
+```
+
+
+
+```{R}
+library(ggplot2)
+forestrmf$biomename<-factor(forestrmf$biomename, levels = c('Tropical & Subtropical Dry Broadleaf Forests','Tropical & Subtropical Moist Broadleaf Forests','Temperate Conifer Forests','Temperate Broadleaf & Mixed Forests','Boreal Forests/Taiga','Mediterranean Forests, Woodlands & Scrub'))
+
+
+p4<-ggplot(forestrmf,aes(x = biomename, y = rmf))+
+  geom_boxplot(width = 0.6,size = 1)+
+  theme_classic()+
+  labs(x = 'Biome',y = 'Root mass fraction (%)')+
+  scale_x_discrete(labels = c('Tropical & Subtropical Dry Broadleaf Forests' = 'Tropical Dry', 
+                              'Tropical & Subtropical Moist Broadleaf Forests' = 'Tropical Moist',
+                              'Temperate Conifer Forests' = 'Temperate Conifer',
+                              'Temperate Broadleaf & Mixed Forests' = 'Temperate Mixed',
+                              'Boreal Forests/Taiga' = 'Boreal',
+                              'Mediterranean Forests, Woodlands & Scrub' = 'Mediterranean'))+
+  scale_y_continuous(limits = c(0,100))+
+  theme(axis.title = element_text(size = 20),axis.text.x = element_text(size = 20),axis.text.y = element_text(size = 20,angle = 45,hjust = 1))+
+  coord_flip()
+  
+
+```
+
+
+
+```{R}
+grassrmf$biomename<-factor(grassrmf$biomename, levels = c('Tropical & Subtropical Grasslands, Savannas & Shrublands','Temperate Grasslands, Savannas & Shrublands','Tundra','Deserts & Xeric Shrublands','Montane Grasslands & Shrublands'))
+
+
+p6<-ggplot(grassrmf,aes(x = biomename, y = rmf))+
+  geom_boxplot(width = 0.6,size = 1)+
+  theme_classic()+
+  labs(x = 'Biome',y = 'Root mass fraction (%)')+
+  scale_x_discrete(labels = c('Tropical & Subtropical Grasslands, Savannas & Shrublands' = 'Tropical',
+                              'Temperate Grasslands, Savannas & Shrublands' = 'Temperate',
+                              'Tundra' = 'Tundra',
+                              'Deserts & Xeric Shrublands' = 'Arid',
+                              'Montane Grasslands & Shrublands' = 'Montane'))+
+  scale_y_continuous(limits = c(0,100))+
+  theme(axis.title = element_text(size = 20),axis.text.x = element_text(size = 20),axis.text.y =element_text(size = 20,angle = 45,hjust = 1))+
+  coord_flip()
+
+```
+
+
+
+```{R}
+shrubrmf$biomename<-factor(shrubrmf$biomename, levels = c('Temperate Grasslands, Savannas & Shrublands','Deserts & Xeric Shrublands','Montane Grasslands & Shrublands','Tundra'))
+
+
+p5<-ggplot(shrubrmf,aes(x = biomename, y = rmf))+
+  geom_boxplot(width = 0.6,size = 1)+
+  theme_classic()+
+  labs(x = 'Biome',y = 'Root mass fraction (%)')+
+  scale_x_discrete(labels = c('Temperate Grasslands, Savannas & Shrublands' = 'Temperate',
+                              'Deserts & Xeric Shrublands' = 'Arid',
+                              'Montane Grasslands & Shrublands' = 'Montane',
+                              'Tundra' = 'Tundra'))+
+  scale_y_continuous(limits = c(0,100))+
+  theme(axis.title = element_text(size = 20),axis.text.x = element_text(size = 20),axis.text.y = element_text(size = 20,angle = 45,hjust = 1))+
+  coord_flip()
+
+```
+
+
+
+
+Load the dataset
+```{R}
+forestcvprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_250km.csv')
+
+grasscvprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_500km.csv')
+
+shrubcvprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_250km.csv')
+
+```
+
+
+
+```{R}
+std <- function(x) sd(x)/sqrt(length(x))
+
+vc<-forestcvprediction$predictmean
+
+std(vc)
+```
+
+```{R}
+forestteststd<-data.frame(samplesize = double(),
+                    standarderror = double(),
+                    stringsAsFactors = FALSE)
+
+forestpredictstd<-data.frame(samplesize = double(),
+                    standarderror = double(),
+                    stringsAsFactors = FALSE)
+
+
+grassteststd<-data.frame(samplesize = double(),
+                    standarderror = double(),
+                    stringsAsFactors = FALSE)
+
+grasspredictstd<-data.frame(samplesize = double(),
+                    standarderror = double(),
+                    stringsAsFactors = FALSE)
+
+
+shrubteststd<-data.frame(samplesize = double(),
+                    standarderror = double(),
+                    stringsAsFactors = FALSE)
+
+shrubpredictstd<-data.frame(samplesize = double(),
+                    standarderror = double(),
+                    stringsAsFactors = FALSE)
+
+```
+
+```{R}
+vc<-sample.int(65535,1000)
+
+for(j in vc){
+set.seed(j)
+for(i in c(5,10,20,30,40,50,100,200,300)){
+  dsrowname<-sample(1:nrow(forestcvprediction), size = i)
+  ds<-forestcvprediction[dsrowname,]
+  forestteststd[nrow(forestteststd)+1,]<-c(i,std(ds$rmf))
+  forestpredictstd[nrow(forestpredictstd)+1,]<-c(i,std(ds$predicted))
+  
+  #print(paste0(i,'  ','predict','  ',std(ds$predictmean)))
+  #print(paste0(i,'  ','test','  ',std(ds$regressionmatrix.rmf)))
+  
+  grassrowname<-sample(1:nrow(grasscvprediction),size = i)
+  grassds<-grasscvprediction[grassrowname,]
+  grassteststd[nrow(grassteststd)+1,]<-c(i, std(grassds$rmf))
+  grasspredictstd[nrow(grasspredictstd)+1,]<-c(i, std(grassds$predicted))
+  
+  
+  shrubrowname<-sample(1:nrow(shrubcvprediction),size = i)
+  shrubds<-shrubcvprediction[shrubrowname,]
+  shrubteststd[nrow(shrubteststd)+1,]<-c(i, std(shrubds$rmf))
+  shrubpredictstd[nrow(shrubpredictstd)+1,]<-c(i, std(shrubds$predicted))
+}
+}
+
+```
+
+```{R}
+forestteststd<-aggregate(forestteststd[,2],list(forestteststd$samplesize),median)
+head(forestteststd)
+names(forestteststd)<-c('samplesize','standarderror')
+forestteststd$veg.type<-'Forest'
+forestteststd$data.type<-'Test'
+
+forestpredictstd<-aggregate(forestpredictstd[,2],list(forestpredictstd$samplesize),median)
+head(forestpredictstd)
+names(forestpredictstd)<-c('samplesize','standarderror')
+forestpredictstd$veg.type<-'Forest'
+forestpredictstd$data.type<-'Predict'
+
+
+grassteststd<-aggregate(grassteststd[,2],list(grassteststd$samplesize),median)
+head(grassteststd)
+names(grassteststd)<-c('samplesize','standarderror')
+grassteststd$veg.type<-'Grassland'
+grassteststd$data.type<-'Test'
+
+
+grasspredictstd<-aggregate(grasspredictstd[,2],list(grasspredictstd$samplesize),median)
+head(grasspredictstd)
+names(grasspredictstd)<-c('samplesize','standarderror')
+grasspredictstd$veg.type<-'Grassland'
+grasspredictstd$data.type<-'Predict'
+
+
+shrubteststd<-aggregate(shrubteststd[,2],list(shrubteststd$samplesize),median)
+head(shrubteststd)
+names(shrubteststd)<-c('samplesize','standarderror')
+shrubteststd$veg.type<-'Shrubland'
+shrubteststd$data.type<-'Test'
+
+
+shrubpredictstd<-aggregate(shrubpredictstd[,2],list(shrubpredictstd$samplesize),median)
+head(shrubpredictstd)
+names(shrubpredictstd)<-c('samplesize','standarderror')
+shrubpredictstd$veg.type<-'Shrubland'
+shrubpredictstd$data.type<-'Predict'
+
+
+teststd<-rbind(forestteststd,rbind(shrubteststd,grassteststd))
+
+predictstd<-rbind(forestpredictstd,rbind(shrubpredictstd,grasspredictstd))
+
+
+foreststd<-rbind(forestteststd,forestpredictstd)
+
+grassstd<-rbind(grassteststd,grasspredictstd)
+
+shrubstd<-rbind(shrubteststd,shrubpredictstd)
+
+
+```
+
+
+```{R}
+library(ggplot2)
+
+p7<-ggplot(data = foreststd, aes(x = samplesize, y = standarderror,color = data.type))+
+  geom_point(size = 2)+
+  #geom_smooth(se = FALSE)
+  geom_smooth(method = 'glm',se = FALSE,method.args = list(family = gaussian(link = '1/mu^2')),size = 1.5)+
+  theme_classic()+
+  labs(x = 'Sample size', y = 'Standard error \n(Root mass fraction in %)')+
+  guides(color = guide_legend(title = 'Data source'))+
+  scale_color_viridis_d()+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20), axis.text.y = element_text(size = 20),
+        legend.title = element_text(size = 20), legend.text = element_text(size = 20),legend.position = c(0.8,0.8))
+
+```
+
+
+
+
+```{R}
+library(ggplot2)
+
+p8<-ggplot(data = shrubstd, aes(x = samplesize, y = standarderror,color = data.type))+
+  geom_point(size = 2)+
+  #geom_smooth(se = FALSE)
+  geom_smooth(method = 'glm',se = FALSE,method.args = list(family = gaussian(link = '1/mu^2')),size = 1.5)+
+  theme_classic()+
+  labs(x = 'Sample size', y = 'Standard error \n(Root mass fraction in %)')+
+  guides(color = guide_legend(title = 'Data source'))+
+  scale_color_viridis_d()+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20), axis.text.y = element_text(size = 20),
+        legend.title = element_text(size = 20), legend.text = element_text(size = 20),legend.position = c(0.8,0.8))
+
+```
+
+
+
+```{R}
+
+p9<-ggplot(data = grassstd, aes(x = samplesize, y = standarderror,color = data.type))+
+  geom_point(size = 2)+
+  #geom_smooth(se = FALSE)
+  geom_smooth(method = 'glm',se = FALSE,method.args = list(family = gaussian(link = '1/mu^2')),size = 1.5)+
+  theme_classic()+
+  labs(x = 'Sample size', y = 'Standard error \n(Root mass fraction in %)')+
+  guides(color = guide_legend(title = 'Data source'))+
+  scale_color_viridis_d()+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20), axis.text.y = element_text(size = 20),
+        legend.title = element_text(size = 20), legend.text = element_text(size = 20),legend.position = c(0.8,0.8))
+
+
+```
+
+
+
+
+
+
+
+```{R}
+spatial.cv <- read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\spatial_cv\\spatial_cv_result.csv')
+
+head(spatial.cv)
+```
+
+
+
+```{R}
+forest.cv<-spatial.cv[spatial.cv$veg_type == 'forest',]
+grass.cv <- spatial.cv[spatial.cv$veg_type == 'grass',]
+shrub.cv <- spatial.cv[spatial.cv$veg_type == 'shrub',]
+
+```
+
+
+```{R}
+p10<-ggplot(forest.cv, aes(x = Buffer_radius_km, y = CDV_R2))+
+  #geom_line(aes(group = veg_type, color = veg_type),size = 1)+
+  geom_point(size = 3, alpha = 0.5)+
+  geom_smooth(method = 'loess',se = FALSE, size = 3, alpha = 0.1, span = 0.6)+
+  coord_cartesian(ylim = c(0,0.6))+
+  labs(x = 'Buffer zone radius (km)', y = 'Coefficient of determination values (R2)')+
+  guides(color = guide_legend(title = 'Vegetation type'))+
+  #scale_color_manual(values = c('dark green', 'dark red', 'dark blue'))+
+  theme_classic()+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20,color = 'black'), axis.text.y = element_text(size = 20, colour = 'black'),
+        legend.title = element_blank(), legend.text = element_text(size = 20))
+```
+
+```{R}
+p12<-ggplot(grass.cv, aes(x = Buffer_radius_km, y = CDV_R2))+
+  #geom_line(aes(group = veg_type, color = veg_type),size = 1)+
+  geom_point(size = 3, alpha = 0.5)+
+  geom_smooth(method = 'loess',se = FALSE, size = 3, alpha = 0.1, span = 0.6)+
+  coord_cartesian(ylim = c(0,0.6))+
+  labs(x = 'Buffer zone radius (km)', y = 'Coefficient of determination values (R2)')+
+  guides(color = guide_legend(title = 'Vegetation type'))+
+  #scale_color_manual(values = c('dark green', 'dark red', 'dark blue'))+
+  theme_classic()+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20,color = 'black'), axis.text.y = element_text(size = 20, colour = 'black'),
+        legend.title = element_blank(), legend.text = element_text(size = 20))
+```
+
+
+
+```{R}
+p11<-ggplot(shrub.cv, aes(x = Buffer_radius_km, y = CDV_R2))+
+  #geom_line(aes(group = veg_type, color = veg_type),size = 1)+
+  geom_point(size = 3, alpha = 0.5)+
+  geom_smooth(method = 'loess',se = FALSE, size = 3, alpha = 0.1, span = 0.6)+
+  coord_cartesian(ylim = c(0,0.6))+
+  labs(x = 'Buffer zone radius (km)', y = 'Coefficient of determination values (R2)')+
+  guides(color = guide_legend(title = 'Vegetation type'))+
+  #scale_color_manual(values = c('dark green', 'dark red', 'dark blue'))+
+  theme_classic()+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20,color = 'black'), axis.text.y = element_text(size = 20, colour = 'black'),
+        legend.title = element_blank(), legend.text = element_text(size = 20))
+```
+
+
+
+
+
+
+```{R}
+library(patchwork)
+
+patch<-p4+p5+p6+p1+p2+p3+p10+p11+p12+plot_layout(nrow = 3)
+patch+plot_annotation(tag_levels = 'A')&
+  theme(plot.tag.position = c(0.2,1),
+        plot.tag = element_text(size = 20,face = 'bold'))
+#patch
+```
+
+
+
+
+### forest model prediction point plot
+
+
+```{R}
+
+modelprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_cvprediction_20200821.csv')
+head(modelprediction)
+#summary(modelprediction$regressionmatrix.rmf)
+paletteForUse <- c('#FF0000',"#FDE725", "#AADC32", "#5DC863", "#27AD81", "#21908C", "#2C728E", "#3B528B", "#472D7B", "#440154")
+colors <-  colorRampPalette(paletteForUse)(256)
+
+
+modelprediction$dens <- col2rgb(densCols(modelprediction$regressionmatrix.rmf, modelprediction$predictmean))[1,]+1L
+modelprediction$colors = colors[modelprediction$dens]
+range(modelprediction$dens)
+quantile(modelprediction$dens,0.9)
+modelprediction[modelprediction$dens >153, 'colors'] = '#BEBEBE'
+
+# summary(lm(rmf ~ rmf_pred_mean, data = modelprediction))
+
+```
+
+```{R}
+
+coef_det <- function(xtrue, xpred){
+    return(1-sum((xtrue-xpred)^2)/sum((xtrue-mean(xtrue))^2))
+}
+
+coef_det(modelprediction$regressionmatrix.rmf, modelprediction$predictmean)
+
+```
+
+
+Making a boxplot that summarizes observation and free prediction.
+
+
+
+
+
+
+
+```{R}
+library(ggplot2)
+
+p13<-ggplot(modelprediction, 
+                      aes(x = predictmean, 
+                          y = regressionmatrix.rmf)) +
+  geom_point(color = modelprediction$colors,size = 2) +
+  labs(x = "Predicted RMF (%)",
+       y = "Observed RMF (%)") +
+  coord_cartesian(xlim = c(0,100), ylim = c(0,100)) +
+  stat_smooth(se = T,
+              colour = "black",
+              size = 0.5,
+              method = "lm") +
+  geom_abline(slope = 1,
+              intercept = 0,
+              na.rm = FALSE, 
+              show.legend = NA, 
+              linetype = "dashed") +
+  #scale_fill_gradientn()
+  theme_classic()+
+  theme(axis.text = element_text(size = 20),axis.title = element_text(size = 20))
+
+
+
+```
+
+
+
+
+
+
+
+
+
+### grass model prediction point plot
+
+
+```{R}
+
+modelprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_cvprediction_20200821.csv')
+#summary(modelprediction$regressionmatrix.rmf)
+head(modelprediction)
+paletteForUse <- c('#FF0000',"#FDE725", "#AADC32", "#5DC863", "#27AD81", "#21908C", "#2C728E", "#3B528B", "#472D7B", "#440154")
+colors <-  colorRampPalette(paletteForUse)(256)
+
+modelprediction$dens <- col2rgb(densCols(modelprediction$regressionmatrix.rmf, modelprediction$predictmean))[1,] + 1L
+modelprediction$colors = colors[modelprediction$dens]
+
+range(modelprediction$dens)
+quantile(modelprediction$dens,0.9)
+
+modelprediction[modelprediction$dens >149, 'colors'] = '#BEBEBE'
+#summary(lm(rmf~ rmf_pred_mean, data = modelprediction))
+
+
+
+
+```
+
+
+
+```{R}
+coef_det(modelprediction$regressionmatrix.rmf, modelprediction$predictmean)
+
+```
+
+
+
+
+```{R}
+library(ggplot2)
+
+p15<-ggplot(modelprediction, 
+                      aes(x = predictmean, 
+                          y = regressionmatrix.rmf)) +
+  geom_point(color = modelprediction$colors,size = 2) +
+  labs(x = "Predicted RMF (%)",
+       y = "Observed RMF (%)") +
+  coord_cartesian(xlim = c(0,100), ylim = c(0,100)) +
+  stat_smooth(se = T,
+              colour = "black",
+              size = 0.5,
+              method = "lm") +
+  geom_abline(slope = 1,
+              intercept = 0,
+              na.rm = FALSE, 
+              show.legend = NA, 
+              linetype = "dashed") +
+  theme_classic()+
+  theme(axis.text = element_text(size = 20),axis.title = element_text(size = 20))
+
+
+
+```
+
+
+
+### shrubland model prediction point plots
+
+
+```{R}
+
+modelprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_cvprediction_20200821.csv')
+#summary(modelprediction$rmf)
+paletteForUse <- c('#FF0000',"#FDE725", "#AADC32", "#5DC863", "#27AD81", "#21908C", "#2C728E", "#3B528B", "#472D7B", "#440154")
+colors <-  colorRampPalette(paletteForUse)(256)
+
+modelprediction$dens <- col2rgb(densCols(modelprediction$regressionmatrix.rmf, modelprediction$predictmean))[1,] + 1L
+modelprediction$colors = colors[modelprediction$dens]
+range(modelprediction$dens)
+quantile(modelprediction$dens,0.9)
+
+modelprediction[modelprediction$dens >152, 'colors'] = '#BEBEBE'
+#summary(lm(rmf ~ rmf_pred_mean, data = modelprediction))
+
+```
+
+
+```{R}
+coef_det(modelprediction$regressionmatrix.rmf, modelprediction$predictmean)
+
+```
+
+```{R}
+library(ggplot2)
+
+p14<-ggplot(modelprediction, 
+                      aes(x = predictmean, 
+                          y = regressionmatrix.rmf)) +
+  stat_smooth(se = T,
+              colour = "black",
+              size = 0.5,
+              method = "lm") +
+  geom_point(color = modelprediction$colors, size = 2) +
+  labs(x = "Predicted RMF (%)",
+       y = "Observed RMF (%)") +
+  coord_cartesian(xlim = c(0,100), ylim = c(0,100)) +
+  
+  geom_abline(slope = 1,
+              intercept = 0,
+              na.rm = FALSE, 
+              show.legend = NA, 
+              linetype = "dashed") +
+  theme_classic()+
+  theme(axis.text = element_text(size = 20),axis.title = element_text(size = 20))
+
+
+
+```
+
+
+```{R}
+library(patchwork)
+
+patch<-p13+p14+p15+p7+p8+p9+plot_layout(nrow = 2)
+patch+plot_annotation(tag_levels = 'A')&
+  theme(plot.tag.position = c(0.2,1),
+        plot.tag = element_text(size = 20,face = 'bold'))
+#patch
+```
+
+
+
+
+
+
+
+
