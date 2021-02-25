@@ -7,7 +7,7 @@
   - 'eight_var_importance.Rmd'. These scripts show how to create Fig.3 with additional experiments (Not shown in the manuscript).
   
 **To understand how factors interactively influence the variation of RMFs:**
-  - 'play_with_data.Rmd' also provides pipeline to create Extended Data Fig.4, 5 and 6.
+  - 'play_with_data.Rmd' also provides pipeline to create Extended Data Fig.5, 6 and 7.
   
 **In another way, using partial linear regression, we are able to detect the role of each factor via the script:**
   - 'forest_lmer.Rmd',
