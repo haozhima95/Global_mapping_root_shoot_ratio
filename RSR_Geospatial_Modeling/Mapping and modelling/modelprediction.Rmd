@@ -5,12 +5,14 @@ date: "11/7/2019"
 output: html_document
 ---
 
+# This scripts allows for creating Fig.1 and supplemental Fig.2 
+
 ### forest model prediction point plot
 
 
 ```{R}
 
-modelprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_250km.csv')
+modelprediction<-read.csv('Your directory\\forest_250km.csv') # This dataset, together with the grass and shrub dataset, are from LOO-CV results.
 head(modelprediction)
 #summary(modelprediction$regressionmatrix.rmf)
 paletteForUse <- c('#FF0000',"#FDE725", "#AADC32", "#5DC863", "#27AD81", "#21908C", "#2C728E", "#3B528B", "#472D7B", "#440154")
@@ -21,11 +23,12 @@ modelprediction$dens <- col2rgb(densCols(modelprediction$rmf, modelprediction$pr
 modelprediction$colors = colors[modelprediction$dens]
 range(modelprediction$dens)
 quantile(modelprediction$dens,0.9)
-modelprediction[modelprediction$dens >148, 'colors'] = '#BEBEBE'
+modelprediction[modelprediction$dens >148, 'colors'] = '#BEBEBE' # Here you have to check the 90% quantile of the column 'dens'
 
-# summary(lm(rmf ~ rmf_pred_mean, data = modelprediction))
+
 
 ```
+Initialize the function for coefficient of determination values.
 
 ```{R}
 
@@ -38,7 +41,7 @@ coef_det(modelprediction$rmf, modelprediction$predicted)
 ```
 
 
-Making a boxplot that summarizes observation and free prediction.
+
 
 
 
@@ -78,29 +81,6 @@ p1<-ggplot(modelprediction,
 
 
 
-```{R}
-
-Dens2D = ggplot(modelprediction, aes(x=predictmean, y=regressionmatrix.rmf) ) +
-  stat_density_2d(aes(fill = ..level..), geom = "polygon") +
-  scale_fill_distiller(limits = c(0,0.025),palette=4, direction=-1) +
-  #geom_hline(aes(yintercept=4.7))+
-  coord_cartesian(ylim = c(0, 100),xlim = c(0,100))+
-  xlab("Predicted RMF (%)") +
-  ylab("Observed RMF (%)") +
-  stat_smooth(se = T,
-              colour = "black",
-              size = 0.5,
-              method = "lm") +
-  geom_abline(slope = 1,
-              intercept = 0,
-              na.rm = FALSE, 
-              show.legend = NA, 
-              linetype = "dashed") +
-  theme_classic()+
-  theme(axis.text = element_text(size = 20),axis.title = element_text(size = 20))
-
-```
-
 
 
 
@@ -110,7 +90,7 @@ Dens2D = ggplot(modelprediction, aes(x=predictmean, y=regressionmatrix.rmf) ) +
 
 ```{R}
 
-modelprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_500km.csv')
+modelprediction<-read.csv('Your directory\\grass_500km.csv')
 #summary(modelprediction$regressionmatrix.rmf)
 head(modelprediction)
 paletteForUse <- c('#FF0000',"#FDE725", "#AADC32", "#5DC863", "#27AD81", "#21908C", "#2C728E", "#3B528B", "#472D7B", "#440154")
@@ -123,7 +103,7 @@ range(modelprediction$dens)
 quantile(modelprediction$dens,0.9)
 
 modelprediction[modelprediction$dens >146, 'colors'] = '#BEBEBE'
-#summary(lm(rmf~ rmf_pred_mean, data = modelprediction))
+
 
 
 
@@ -164,28 +144,7 @@ p3<-ggplot(modelprediction,
 
 ```
 
-```{R}
 
-Dens2Dgrass = ggplot(modelprediction, aes(x=predictmean, y=regressionmatrix.rmf) ) +
-  stat_density_2d(aes(fill = ..level..), geom = "polygon") +
-  scale_fill_distiller(palette=4, direction=1) +
-  #geom_hline(aes(yintercept=4.7))+
-  #coord_cartesian(ylim = c(0, 10),xlim = c(-4, 19))+
-  xlab("Predicted RMF (%)") +
-  ylab("Observed RMF (%)") +
-  stat_smooth(se = T,
-              colour = "black",
-              size = 0.5,
-              method = "lm") +
-  geom_abline(slope = 1,
-              intercept = 0,
-              na.rm = FALSE, 
-              show.legend = NA, 
-              linetype = "dashed") +
-  theme_classic()+
-  theme(axis.text = element_text(size = 20),axis.title = element_text(size = 20))
-
-```
 
 
 ### shrubland model prediction point plots
@@ -193,7 +152,7 @@ Dens2Dgrass = ggplot(modelprediction, aes(x=predictmean, y=regressionmatrix.rmf)
 
 ```{R}
 
-modelprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_250km.csv')
+modelprediction<-read.csv('Your directory\\shrub_250km.csv')
 #summary(modelprediction$rmf)
 paletteForUse <- c('#FF0000',"#FDE725", "#AADC32", "#5DC863", "#27AD81", "#21908C", "#2C728E", "#3B528B", "#472D7B", "#440154")
 colors <-  colorRampPalette(paletteForUse)(256)
@@ -204,7 +163,7 @@ range(modelprediction$dens)
 quantile(modelprediction$dens,0.9)
 
 modelprediction[modelprediction$dens >149, 'colors'] = '#BEBEBE'
-#summary(lm(rmf ~ rmf_pred_mean, data = modelprediction))
+
 
 ```
 
@@ -242,28 +201,7 @@ p2<-ggplot(modelprediction,
 ```
 
 
-```{R}
 
-Dens2Dshrub = ggplot(modelprediction, aes(x=predictmean, y=regressionmatrix.rmf) ) +
-  stat_density_2d(aes(fill = ..level..), geom = "polygon") +
-  scale_fill_distiller(palette=4, direction=1) +
-  #geom_hline(aes(yintercept=4.7))+
-  #coord_cartesian(ylim = c(0, 10),xlim = c(-4, 19))+
-  xlab("Predicted RMF (%)") +
-  ylab("Observed RMF (%)") +
-  stat_smooth(se = T,
-              colour = "black",
-              size = 0.5,
-              method = "lm") +
-  geom_abline(slope = 1,
-              intercept = 0,
-              na.rm = FALSE, 
-              show.legend = NA, 
-              linetype = "dashed") +
-  theme_classic()+
-  theme(axis.text = element_text(size = 20),axis.title = element_text(size = 20))
-
-```
 
 
 
@@ -295,7 +233,7 @@ Set the path route.
 
 ```{R}
 
-st <- 'C:\\Users\\haozh\\Desktop\\root_ratio\\model_biome_comparison\\20200805\\'
+st <- 'Your directory\\'
 
 
 ```
@@ -433,11 +371,11 @@ p5<-ggplot(shrubrmf,aes(x = biomename, y = rmf))+
 
 Load the dataset
 ```{R}
-forestcvprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_250km.csv')
+forestcvprediction<-read.csv('Your directory\\forest_250km.csv')
 
-grasscvprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_500km.csv')
+grasscvprediction<-read.csv('Your directory\\grass_500km.csv')
 
-shrubcvprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_250km.csv')
+shrubcvprediction<-read.csv('Your directory\\shrub_250km.csv')
 
 ```
 
@@ -626,7 +564,7 @@ p9<-ggplot(data = grassstd, aes(x = samplesize, y = standarderror,color = data.t
 
 
 ```{R}
-spatial.cv <- read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\spatial_cv\\spatial_cv_result.csv')
+spatial.cv <- read.csv('Your directory\\spatial_cv_result.csv')
 
 head(spatial.cv)
 ```
@@ -688,7 +626,7 @@ p11<-ggplot(shrub.cv, aes(x = Buffer_radius_km, y = CDV_R2))+
 
 
 
-
+## Construct Fig.1
 
 ```{R}
 library(patchwork)
@@ -708,7 +646,7 @@ patch+plot_annotation(tag_levels = 'A')&
 
 ```{R}
 
-modelprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_cvprediction_20200821.csv')
+modelprediction<-read.csv('Your directory\\forest_cvprediction_20200821.csv')
 head(modelprediction)
 #summary(modelprediction$regressionmatrix.rmf)
 paletteForUse <- c('#FF0000',"#FDE725", "#AADC32", "#5DC863", "#27AD81", "#21908C", "#2C728E", "#3B528B", "#472D7B", "#440154")
@@ -721,7 +659,7 @@ range(modelprediction$dens)
 quantile(modelprediction$dens,0.9)
 modelprediction[modelprediction$dens >153, 'colors'] = '#BEBEBE'
 
-# summary(lm(rmf ~ rmf_pred_mean, data = modelprediction))
+
 
 ```
 
@@ -784,7 +722,7 @@ p13<-ggplot(modelprediction,
 
 ```{R}
 
-modelprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_cvprediction_20200821.csv')
+modelprediction<-read.csv('Your directory\\grass_cvprediction_20200821.csv')
 #summary(modelprediction$regressionmatrix.rmf)
 head(modelprediction)
 paletteForUse <- c('#FF0000',"#FDE725", "#AADC32", "#5DC863", "#27AD81", "#21908C", "#2C728E", "#3B528B", "#472D7B", "#440154")
@@ -797,7 +735,7 @@ range(modelprediction$dens)
 quantile(modelprediction$dens,0.9)
 
 modelprediction[modelprediction$dens >149, 'colors'] = '#BEBEBE'
-#summary(lm(rmf~ rmf_pred_mean, data = modelprediction))
+
 
 
 
@@ -847,7 +785,7 @@ p15<-ggplot(modelprediction,
 
 ```{R}
 
-modelprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_cvprediction_20200821.csv')
+modelprediction<-read.csv('Your directory\\shrub_cvprediction_20200821.csv')
 #summary(modelprediction$rmf)
 paletteForUse <- c('#FF0000',"#FDE725", "#AADC32", "#5DC863", "#27AD81", "#21908C", "#2C728E", "#3B528B", "#472D7B", "#440154")
 colors <-  colorRampPalette(paletteForUse)(256)
@@ -894,7 +832,7 @@ p14<-ggplot(modelprediction,
 
 
 ```
-
+Supplemental Fig. 2.
 
 ```{R}
 library(patchwork)
