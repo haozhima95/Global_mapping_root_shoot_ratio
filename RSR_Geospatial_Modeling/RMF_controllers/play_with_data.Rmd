@@ -6,8 +6,8 @@ output: html_document
 ---
 
 ### This script is used for data play with sampled RMF and most important variables. 
-##### You can use this script to get Fig 3 (D~L).in our manuscript and Extended Data Fig.4, Fig.5 and Fig.6 in our supplementary material.
-##### For Fig.3 panels, see the arrangement in line 1546. For Extended Data Fig. 4, see the arrangement in line 1660 For Extended Data Fig.5, see the arrangement in line 1863. And for Extended Data Fig.5, see the arrangement in the line 1762. 
+##### You can use this script to get Fig 3 (D~L).in our manuscript and Extended Data Fig.5, Fig.6 and Fig.7 in our supplementary material.
+##### For Fig.3 panels, see the arrangement in line 1546. For Extended Data Fig. 5, see the arrangement in line 1660 For Extended Data Fig.6, see the arrangement in line 1863. And for Extended Data Fig.7, see the arrangement in the line 1762. 
 
 Load the data and have a look at histograms
 
@@ -1656,7 +1656,7 @@ p4<-ggparty(foresttree)+
   )
 
 ```
-Extended Data Fig.4
+Extended Data Fig.5
 ```{R}
 
 library(patchwork)
@@ -1757,7 +1757,7 @@ p4<-ggparty(foresttree)+
   )
 
 ```
-Extended Data Fig.6.
+Extended Data Fig.7.
 
 ```{R}
 patch<-p1+p2+p3+p4+plot_layout(ncol = 1)
@@ -1859,7 +1859,7 @@ p4<-ggparty(foresttree)+
 
 ```
 
-Extended Data Fig.5
+Extended Data Fig.6
 ```{R}
 patch<-p1+p2+p3+p4+plot_layout(ncol = 1)
 patch+plot_annotation(tag_levels = 'A')&
