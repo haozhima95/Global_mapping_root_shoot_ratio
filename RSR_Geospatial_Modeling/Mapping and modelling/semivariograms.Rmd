@@ -1,0 +1,891 @@
+---
+title: "forest_resi"
+author: "Haozhi Ma"
+date: "2/4/2021"
+output: html_document
+---
+
+```{R}
+library(sp)
+
+library(spatstat)
+
+library(gstat)
+
+library(geoR)
+
+library(ncf)
+
+library(spdep)
+
+
+
+```
+
+
+
+```{R}
+forest.rsr.grsearch<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_rsr_sample_for_grsearch_20200517.csv')
+
+cvprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_cvprediction_20200821.csv')
+
+forest_150km <-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_150km.csv')
+
+forest_0km <- read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_0km.csv')
+
+forest_250km <- read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_250km.csv')
+
+forest_500km <- read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_500km.csv')
+
+forest_1000km <- read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\forest_1000km.csv')
+
+```
+
+```{R}
+
+head(forest.rsr.grsearch)
+
+```
+
+```{R}
+head(cvprediction)
+
+```
+
+```{R}
+newdata<-cbind(cvprediction, forest.rsr.grsearch[,c('longitude','latitude')])
+
+head(newdata)
+
+
+```
+
+
+
+```{R}
+
+newdata$resi<-newdata$regressionmatrix.rmf-newdata$predictmean
+forest_0km$resi <- forest_0km$rmf - forest_0km$predicted
+
+forest_150km$resi <- forest_150km$rmf - forest_150km$predicted
+
+forest_250km$resi <- forest_250km$rmf - forest_250km$predicted
+
+forest_500km$resi <- forest_500km$rmf - forest_500km$predicted
+
+forest_1000km$resi <- forest_1000km$rmf - forest_1000km$predicted
+
+```
+
+
+File conversion
+```{R}
+coordinates(newdata) <- ~longitude+latitude
+proj4string(newdata) <- CRS("+init=epsg:4326")
+
+
+coordinates(forest_0km) <- ~longitude+latitude
+proj4string(forest_0km) <- CRS("+init=epsg:4326")
+
+coordinates(forest_150km) <- ~longitude+latitude
+proj4string(forest_150km) <- CRS("+init=epsg:4326")
+
+coordinates(forest_250km) <- ~longitude+latitude
+proj4string(forest_250km) <- CRS("+init=epsg:4326")
+
+coordinates(forest_500km) <- ~longitude+latitude
+proj4string(forest_500km) <- CRS("+init=epsg:4326")
+
+
+coordinates(forest_1000km) <- ~longitude+latitude
+proj4string(forest_1000km) <- CRS("+init=epsg:4326")
+```
+
+
+
+
+
+
+```{R}
+vcloud.resi <- variogram(resi~1, data =newdata, cloud = F, cutoff = 1000, width = 10)
+vcloud.resi$cat<-'resi'
+
+summary(vcloud.resi$dist)
+resi.fit<-fit.variogram(vcloud.resi,vgm(22,'Sph',NA,0),fit.kappa = TRUE)
+```
+
+```{R}
+
+resi.fit
+
+```
+
+
+
+```{R}
+library(automap)
+vari.resi<-autofitVariogram(resi~1, newdata, model = c('Sph'), cutoff = 1000, width = 10, cloud = F)
+
+summary(vari.resi)
+
+```
+
+
+
+
+```{R}
+plot(vcloud.resi)
+
+```
+
+
+
+```{R}
+vcloud<-variogram(regressionmatrix.rmf~1, data =newdata, cloud = F,cutoff = 1000, width = 10)
+vcloud$cat<-'raw'
+
+```
+
+```{R}
+plot(vcloud)
+
+```
+
+```{R}
+v0 <- variogram(resi~1, data = forest_0km, cloud = F, cutoff = 1000, width = 10)
+v0$cat <- 'spatial_cv_0km'
+var.fit0<-fit.variogram(v0,vgm(NA,'Sph',NA,0))
+```
+```{R}
+
+var.fit$range[2]
+```
+
+
+
+
+```{R}
+plot(v0)
+
+```
+
+```{R}
+v150 <- variogram(resi~1, data = forest_150km, cloud = F, cutoff = 1000, width = 10)
+v150$cat <- 'spatial_cv_150km'
+var.fit150<-fit.variogram(v150,vgm(NA,'Sph',NA,16))
+```
+
+```{R}
+autofitVariogram(resi~1,forest_150km, model = 'Sph',verbose = F)
+
+```
+
+```{R}
+plot(v150)
+
+```
+
+
+```{R}
+v250 <- variogram(resi~1, data = forest_250km, cloud = F, cutoff = 1000, width = 10)
+v250$cat <- 'spatial_cv_250km'
+var.fit250<-fit.variogram(v250,vgm(c('Sph')))
+```
+
+```{R}
+autofitVariogram(resi~1, forest_250km, model = 'Sph',verbose = F)
+
+```
+
+```{R}
+plot(v250)
+
+```
+
+
+```{R}
+v500 <- variogram(resi~1, data = forest_500km, cloud = F, cutoff = 1000, width = 10)
+v500$cat <- 'spatial_cv_500km'
+var.fit500<-fit.variogram(v500,vgm(c('Sph')))
+```
+
+
+```{R}
+autofitVariogram(resi~1, forest_500km, model = 'Sph', verbose = F)
+
+```
+
+
+```{R}
+plot(v500)
+
+```
+
+
+
+```{R}
+v1000 <- variogram(resi~1, data = forest_1000km, cloud = F, cutoff = 1000, width = 10)
+v1000$cat <- 'spatial_cv_1000km'
+fit.variogram(v1000,vgm(c('Sph')))
+```
+
+```{R}
+plot(v1000)
+
+```
+
+
+
+```{R}
+allv<-rbind(vcloud.resi,rbind(v150,rbind(v250,v500)))
+head(allv)
+
+```
+
+
+```{R}
+allv$cat<-factor(allv$cat, levels = c('resi','spatial_cv_150km', 'spatial_cv_250km','spatial_cv_500km'))
+
+```
+
+
+
+```{R}
+
+library(ggplot2)
+```
+
+
+
+```{R}
+library(ggplot2)
+p1<-ggplot(data = allv, aes(x = dist, y = gamma, color = cat))+
+  #geom_point(size = 2,alpha = 0)+
+  geom_smooth(method = 'loess',se = FALSE,size = 2,span = 0.3)+
+  #geom_line(aes(group = cat, color = cat))+
+  theme_classic()+
+  #scale_y_continuous(limits = c(0,40))+
+  labs(x = 'Distance (km)', y = 'Semivariance')+
+  scale_color_viridis_d()+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20,color = 'black'), axis.text.y = element_text(size = 20, colour = 'black'),
+        legend.title = element_blank(), legend.text = element_text(size = 20),legend.position = 'none')
+
+```
+
+
+```{R}
+model.resi<-c('random_forest','spatial_cv_150km','spatial_cv_250km','spatial_cv_500km')
+sacrange<-c(resi.fit$range[2], var.fit150$range[2], var.fit250$range[2], var.fit500$range[2])
+
+rangeds<-cbind(model.resi, sacrange)
+rangeds <- as.data.frame(rangeds)
+
+rangeds$model.resi <- model.resi
+rangeds$sacrange <- sacrange
+
+rangeds$model.resi <- factor(rangeds$model.resi, levels = c('random_forest','spatial_cv_150km','spatial_cv_250km','spatial_cv_500km'))
+rangeds$group <- 1
+```
+
+```{R}
+q1<-ggplot(data = rangeds, aes(x = model.resi, y = sacrange))+
+  geom_point(color = 'dark green', size = 4, alpha = 0.5)+
+  geom_line(aes(group = group), size = 2, color = 'dark green', alpha = 0.5)+
+  theme_classic()+
+  labs(x = 'Model residuals', y = 'Range (km)')+
+  scale_y_continuous(limits = c(0,350))+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20,color = 'black',angle = 45, hjust = 1), axis.text.y = element_text(size = 20, colour = 'black'))
+
+```
+
+
+
+
+```{R}
+forest.rsr.grsearch<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_rsr_sample_for_grsearch_20200517.csv')
+
+cvprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_cvprediction_20200821.csv')
+
+forest_150km <-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_150km.csv')
+
+forest_0km <- read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_0km.csv')
+
+forest_250km <- read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_250km.csv')
+
+forest_500km <- read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_500km.csv')
+
+forest_1000km <- read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\grass_1000km.csv')
+
+```
+
+```{R}
+
+head(forest.rsr.grsearch)
+
+```
+
+```{R}
+head(cvprediction)
+
+```
+
+
+
+
+
+```{R}
+head(cvprediction)
+
+```
+
+```{R}
+newdata<-cbind(cvprediction, forest.rsr.grsearch[,c('longitude','latitude')])
+
+head(newdata)
+
+
+```
+
+
+
+```{R}
+
+newdata$resi<-newdata$regressionmatrix.rmf-newdata$predictmean
+forest_0km$resi <- forest_0km$rmf - forest_0km$predicted
+
+forest_150km$resi <- forest_150km$rmf - forest_150km$predicted
+
+
+forest_250km$resi <- forest_250km$rmf - forest_250km$predicted
+
+forest_500km$resi <- forest_500km$rmf - forest_500km$predicted
+
+forest_1000km$resi <- forest_1000km$rmf - forest_1000km$predicted
+
+
+```
+
+
+File conversion
+```{R}
+coordinates(newdata) <- ~longitude+latitude
+proj4string(newdata) <- CRS("+init=epsg:4326")
+
+
+coordinates(forest_0km) <- ~longitude+latitude
+proj4string(forest_0km) <- CRS("+init=epsg:4326")
+
+coordinates(forest_150km) <- ~longitude+latitude
+proj4string(forest_150km) <- CRS("+init=epsg:4326")
+
+coordinates(forest_250km) <- ~longitude+latitude
+proj4string(forest_250km) <- CRS("+init=epsg:4326")
+
+coordinates(forest_500km) <- ~longitude+latitude
+proj4string(forest_500km) <- CRS("+init=epsg:4326")
+
+
+coordinates(forest_1000km) <- ~longitude+latitude
+proj4string(forest_1000km) <- CRS("+init=epsg:4326")
+
+```
+
+
+
+
+
+
+```{R}
+vcloud.resi <- variogram(resi~1, data =newdata, cloud = F, cutoff = 1000, width = 10)
+vcloud.resi$cat<-'resi'
+
+summary(vcloud.resi$dist)
+
+resi.fit<-fit.variogram(vcloud.resi, vgm(c('Sph')))
+
+
+```
+
+```{R}
+autofitVariogram(resi~1, newdata, model = 'Sph', verbose = F)
+
+```
+
+```{R}
+plot(vcloud.resi)
+
+```
+
+
+
+```{R}
+vcloud<-variogram(regressionmatrix.rmf~1, data =newdata, cloud = F, cutoff = 1000, width = 10)
+vcloud$cat<-'raw'
+
+```
+
+```{R}
+plot(vcloud)
+
+```
+
+```{R}
+v0 <- variogram(resi~1, data = forest_0km, cloud = F, cutoff = 1000, width = 10)
+v0$cat <- 'spatial_cv_0km'
+var.fit0<-fit.variogram(v0, vgm(c('Sph')))
+```
+
+```{R}
+autofitVariogram(resi~1, forest_0km, model = 'Sph', verbose = F)
+
+```
+
+
+```{R}
+plot(v0)
+
+```
+
+```{R}
+v150 <- variogram(resi~1, data = forest_150km, cloud = F, cutoff = 1000, width = 10)
+v150$cat <- 'spatial_cv_150km'
+var.fit150 <- fit.variogram(v150, vgm(c('Sph')))
+```
+
+```{R}
+autofitVariogram(resi~1, forest_150km, model = 'Sph', verbose = F)
+
+```
+
+
+```{R}
+plot(v150)
+
+```
+
+
+```{R}
+v250 <- variogram(resi~1, data = forest_250km, cloud = F, cutoff = 1000, width = 10)
+v250$cat <- 'spatial_cv_250km'
+var.fit <- fit.variogram(v250, vgm(c('Sph')))
+```
+
+```{R}
+autofitVariogram(resi~1, forest_250km, model = 'Sph', verbose = F)
+
+```
+
+
+```{R}
+plot(v250)
+
+```
+
+
+```{R}
+v500 <- variogram(resi~1, data = forest_500km, cloud = F, cutoff = 1000, width = 10)
+v500$cat <- 'spatial_cv_500km'
+var.fit500 <- fit.variogram(v500, vgm(c('Sph')))
+```
+
+
+```{R}
+autofitVariogram(resi~1, forest_500km, model = 'Sph', verbose = F)
+
+```
+
+
+```{R}
+plot(v500)
+
+```
+
+
+```{R}
+v1000 <- variogram(resi~1, data = forest_1000km, cloud = F, cutoff = 1000, width = 10)
+v1000$cat <- 'spatial_cv_1000km'
+```
+
+```{R}
+
+autofitVariogram(resi~1, forest_1000km, model = 'Sph', verbose = F)
+```
+
+
+```{R}
+plot(v1000)
+
+```
+
+
+
+
+```{R}
+allv<-rbind(vcloud.resi,rbind(v150,rbind(v250,v500)))
+head(allv)
+
+```
+
+```{R}
+
+library(ggplot2)
+```
+
+```{R}
+allv$cat<-factor(allv$cat, levels = c('resi','spatial_cv_150km', 'spatial_cv_250km','spatial_cv_500km'))
+
+```
+
+```{R}
+library(ggplot2)
+p3<-ggplot(data = allv, aes(x = dist, y = gamma, color = cat))+
+  #geom_point(size = 2,alpha = 0)+
+  geom_smooth(method = 'loess', se = FALSE, size = 2, span = 0.3)+
+  #geom_line(aes(group = cat, color = cat))+
+  theme_classic()+
+  #scale_y_continuous(limits = c(0,400))+
+  labs(x = 'Distance (km)', y = 'Semivariance')+
+  scale_color_viridis_d()+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20,color = 'black'), axis.text.y = element_text(size = 20, colour = 'black'),
+        legend.title = element_blank(), legend.text = element_text(size = 20), legend.position = 'none')
+
+```
+
+
+
+```{R}
+model.resi<-c('random_forest','spatial_cv_150km','spatial_cv_250km','spatial_cv_500km')
+sacrange<-c(resi.fit$range[2], var.fit150$range[2], var.fit250$range[2], var.fit500$range[2])
+
+rangeds<-cbind(model.resi, sacrange)
+rangeds <- as.data.frame(rangeds)
+
+rangeds$model.resi <- model.resi
+rangeds$sacrange <- sacrange
+
+rangeds$model.resi <- factor(rangeds$model.resi, levels = c('random_forest','spatial_cv_150km','spatial_cv_250km','spatial_cv_500km'))
+rangeds$group <- 1
+```
+
+```{R}
+q3<-ggplot(data = rangeds, aes(x = model.resi, y = sacrange))+
+  geom_point(color = 'dark red', size = 4, alpha = 0.5)+
+  geom_line(aes(group = group), size = 2, color = 'dark red', alpha = 0.5)+
+  theme_classic()+
+  scale_y_continuous(limits = c(0,350))+
+  labs(x = 'Model residuals', y = 'Range (km)')+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20,color = 'black',angle = 45, hjust = 1), axis.text.y = element_text(size = 20, colour = 'black'))
+
+```
+
+
+
+
+```{R}
+forest.rsr.grsearch<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_rsr_sample_for_grsearch_20200517.csv')
+
+cvprediction<-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_cvprediction_20200821.csv')
+
+forest_150km <-read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_150km.csv')
+
+forest_0km <- read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_0km.csv')
+
+forest_250km <- read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_250km.csv')
+
+forest_500km <- read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_500km.csv')
+
+forest_1000km <- read.csv('C:\\Users\\haozh\\Desktop\\root_ratio\\grsearch\\shrub_1000km.csv')
+
+```
+
+```{R}
+
+head(forest.rsr.grsearch)
+
+```
+
+```{R}
+head(cvprediction)
+
+```
+
+
+
+
+
+```{R}
+head(cvprediction)
+
+```
+
+```{R}
+newdata<-cbind(cvprediction, forest.rsr.grsearch[,c('longitude','latitude')])
+
+head(newdata)
+
+
+```
+
+
+
+```{R}
+
+newdata$resi<-newdata$regressionmatrix.rmf-newdata$predictmean
+forest_0km$resi <- forest_0km$rmf - forest_0km$predicted
+
+forest_150km$resi <- forest_150km$rmf - forest_150km$predicted
+
+
+forest_250km$resi <- forest_250km$rmf - forest_250km$predicted
+
+forest_500km$resi <- forest_500km$rmf - forest_500km$predicted
+
+forest_1000km$resi <- forest_1000km$rmf - forest_1000km$predicted
+
+
+```
+
+
+File conversion
+```{R}
+coordinates(newdata) <- ~longitude+latitude
+proj4string(newdata) <- CRS("+init=epsg:4326")
+
+
+coordinates(forest_0km) <- ~longitude+latitude
+proj4string(forest_0km) <- CRS("+init=epsg:4326")
+
+coordinates(forest_150km) <- ~longitude+latitude
+proj4string(forest_150km) <- CRS("+init=epsg:4326")
+
+coordinates(forest_250km) <- ~longitude+latitude
+proj4string(forest_250km) <- CRS("+init=epsg:4326")
+
+coordinates(forest_500km) <- ~longitude+latitude
+proj4string(forest_500km) <- CRS("+init=epsg:4326")
+
+
+coordinates(forest_1000km) <- ~longitude+latitude
+proj4string(forest_1000km) <- CRS("+init=epsg:4326")
+
+```
+
+
+
+
+
+
+```{R}
+vcloud.resi <- variogram(resi~1, data =newdata, cloud = F, cutoff = 1000, width = 10)
+vcloud.resi$cat<-'resi'
+
+summary(vcloud.resi$dist)
+
+resi.fit<-fit.variogram(vcloud.resi, vgm(c('Sph')))
+```
+
+```{R}
+autofitVariogram(resi~1, newdata, model = 'Sph', verbose = F)
+
+```
+
+
+
+
+```{R}
+plot(vcloud.resi)
+
+```
+
+
+
+```{R}
+vcloud<-variogram(regressionmatrix.rmf~1, data =newdata, cloud = F, cutoff = 1000, width = 10)
+vcloud$cat<-'raw'
+
+```
+
+```{R}
+plot(vcloud)
+
+```
+
+```{R}
+v0 <- variogram(resi~1, data = forest_0km, cloud = F, cutoff = 1000, width = 10)
+v0$cat <- 'spatial_cv_0km'
+```
+
+```{R}
+autofitVariogram(resi~1, forest_0km, model = 'Sph', verbose = F)
+
+```
+
+
+```{R}
+plot(v0)
+
+```
+
+```{R}
+v150 <- variogram(resi~1, data = forest_150km, cloud = F, cutoff = 1000, width = 10)
+v150$cat <- 'spatial_cv_150km'
+var.fit150 <- fit.variogram(v150, vgm(c('Sph')))
+```
+
+```{R}
+autofitVariogram(resi~1, forest_150km, model = 'Sph', verbose = F)
+
+
+```
+
+
+
+```{R}
+plot(v150)
+
+```
+
+
+```{R}
+v250 <- variogram(resi~1, data = forest_250km, cloud = F, cutoff = 1000, width = 10)
+v250$cat <- 'spatial_cv_250km'
+
+var.fit250 <- fit.variogram(v250, vgm(c('Sph')))
+```
+
+```{R}
+autofitVariogram(resi~1, forest_250km, model = 'Sph', verbose = F)
+
+```
+
+
+```{R}
+plot(v250)
+
+```
+
+
+```{R}
+v500 <- variogram(resi~1, data = forest_500km, cloud = F, cutoff = 1000, width = 10)
+v500$cat <- 'spatial_cv_500km'
+
+var.fit500 <- fit.variogram(v500, vgm(c('Sph')))
+```
+
+```{R}
+autofitVariogram(resi~1, forest_500km, model = 'Sph', verbose = F)
+
+
+```
+
+
+```{R}
+plot(v500)
+
+```
+
+
+```{R}
+v1000 <- variogram(resi~1, data = forest_1000km, cloud = F, cutoff = 1000, width = 10)
+v1000$cat <- 'spatial_cv_1000km'
+```
+
+```{R}
+autofitVariogram(resi~1, forest_1000km, model = 'Sph', verbose = F)
+
+```
+
+
+```{R}
+plot(v1000)
+
+```
+
+
+
+
+```{R}
+allv<-rbind(vcloud.resi,rbind(v150,rbind(v250,v500)))
+head(allv)
+
+```
+
+```{R}
+
+library(ggplot2)
+```
+
+```{R}
+allv$cat<-factor(allv$cat, levels = c('resi','spatial_cv_150km', 'spatial_cv_250km','spatial_cv_500km'))
+
+```
+
+```{R}
+library(ggplot2)
+p2<-ggplot(data = allv, aes(x = dist, y = gamma, color = cat))+
+  #geom_point(size = 2,alpha = 0)+
+  #geom_line(aes(group = cat, color = cat))+
+  geom_smooth(method = 'loess', se = FALSE, size = 2, span = 0.4)+
+  theme_classic()+
+  #scale_y_continuous(limits = c(0,400))+
+  labs(x = 'Distance (km)', y = 'Semivariance')+
+  scale_color_viridis_d()+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20,color = 'black'), axis.text.y = element_text(size = 20, colour = 'black'),
+        legend.title = element_blank(), legend.text = element_text(size = 20),legend.position = 'none')
+
+```
+
+
+
+```{R}
+model.resi<-c('random_forest','spatial_cv_150km','spatial_cv_250km','spatial_cv_500km')
+sacrange<-c(resi.fit$range[2], var.fit150$range[2], var.fit250$range[2], var.fit500$range[2])
+
+rangeds<-cbind(model.resi, sacrange)
+rangeds <- as.data.frame(rangeds)
+
+rangeds$model.resi <- model.resi
+rangeds$sacrange <- sacrange
+
+rangeds$model.resi <- factor(rangeds$model.resi, levels = c('random_forest','spatial_cv_150km','spatial_cv_250km','spatial_cv_500km'))
+rangeds$group <- 1
+```
+
+```{R}
+q2<-ggplot(data = rangeds, aes(x = model.resi, y = sacrange))+
+  geom_point(color = 'dark blue', size = 4, alpha = 0.5)+
+  geom_line(aes(group = group), size = 2, color = 'dark blue', alpha = 0.5)+
+  theme_classic()+
+  scale_y_continuous(limits = c(0,350))+
+  labs(x = 'Model residuals', y = 'Range (km)')+
+  theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20,color = 'black', angle = 45, hjust = 1), axis.text.y = element_text(size = 20, colour = 'black'))
+
+```
+
+
+```{R}
+library(ggpubr)
+
+ggarrange(p1,p2,p3,
+          
+        ncol = 3,
+        nrow = 1)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
