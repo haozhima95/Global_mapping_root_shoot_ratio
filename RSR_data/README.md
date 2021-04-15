@@ -1,7 +1,7 @@
 ## Raw observations of root-shoot-ratio in three vegetation types
 
-These folder contain raw records of root-shoot-ratio of their respecitve vegetation types.
+Raw root shoot ratio observations from previous published literatures of the three vegetation types are in the csv file:"Compiled_root_shoot_ratio_table_of_forest_shrubland_and_grassland.csv".
 
-- ["forest_raw"](https://github.com/haozhima95/Global_mapping_root_shoot_ratio/tree/master/RSR_data/forest_raw): forest raw observations from previous published literatures.
-- ["grass_raw"](https://github.com/haozhima95/Global_mapping_root_shoot_ratio/tree/master/RSR_data/grass_raw): grassland raw observations from previous published literatures.
-- ["shrub_raw"](https://github.com/haozhima95/Global_mapping_root_shoot_ratio/tree/master/RSR_data/shrub_raw): shrubland raw observations from previous published literatures.
+Please find the references of these observations in the supplementary of the paper.
+
+
