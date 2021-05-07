@@ -6,8 +6,8 @@ output: html_document
 ---
 
 ### This script is used for data play with sampled RMF and most important variables. 
-##### You can use this script to get Fig 3 (D~L).in our manuscript and Extended Data Fig.5, Fig.6 and Fig.7 in our supplementary material.
-##### For Fig.3 panels, see the arrangement in line 1546. For Extended Data Fig. 5, see the arrangement in line 1660 For Extended Data Fig.6, see the arrangement in line 1863. And for Extended Data Fig.7, see the arrangement in the line 1762. 
+##### You can use this script to get Fig 4 (D~L).in our manuscript and Extended Data Fig.4, Fig.5 and Fig.6 in our supplementary material.
+##### For Fig.4 panels, see the arrangement in line 1546. For Extended Data Fig. 4, see the arrangement in line 1660 For Extended Data Fig.5, see the arrangement in line 1863. And for Extended Data Fig.6, see the arrangement in the line 1762. 
 
 Load the data and have a look at histograms
 
