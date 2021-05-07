@@ -5,7 +5,7 @@ date: "2/4/2021"
 output: html_document
 ---
 
-This script can be used for creating supplemental Fig.3.
+This script can be used for creating Extended Data Fig. 2 panels g~i
 
 
 ```{R}
@@ -737,7 +737,7 @@ q2<-ggplot(data = rangeds, aes(x = model.resi, y = sacrange))+
   theme(axis.title = element_text(size = 20), axis.text.x = element_text(size = 20,color = 'black', angle = 45, hjust = 1), axis.text.y = element_text(size = 20, colour = 'black'))
 
 ```
-Create supplemental Fig. 3
+### Extended Data Fig. 2 panels g~i.
 
 ```{R}
 library(ggpubr)
