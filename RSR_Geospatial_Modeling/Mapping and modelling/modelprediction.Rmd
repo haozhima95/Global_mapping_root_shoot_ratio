@@ -5,10 +5,10 @@ date: "11/7/2019"
 output: html_document
 ---
 
-# This scripts allows for creating Fig.1 and supplemental Fig.2 
+# This scripts allows for creating Fig.2 and supplemental Fig.3 
 
 ### forest model prediction point plot
-
+### Fig. 2 panels d~f
 
 ```{R}
 
@@ -207,7 +207,7 @@ p2<-ggplot(modelprediction,
 
 
 
-
+### Fig. 2 panels a~c
 
 #### Set the name list
 
@@ -366,7 +366,7 @@ p5<-ggplot(shrubrmf,aes(x = biomename, y = rmf))+
 
 ```
 
-
+### Extended Data Fig. 2 d~f
 
 
 Load the dataset
@@ -626,7 +626,7 @@ p11<-ggplot(shrub.cv, aes(x = Buffer_radius_km, y = CDV_R2))+
 
 
 
-## Construct Fig.1
+## Construct Fig.2
 
 ```{R}
 library(patchwork)
@@ -640,7 +640,7 @@ patch+plot_annotation(tag_levels = 'A')&
 
 
 
-
+### Extended data Fig. 2 a~c
 ### forest model prediction point plot
 
 
@@ -832,7 +832,7 @@ p14<-ggplot(modelprediction,
 
 
 ```
-Supplemental Fig. 2.
+
 
 ```{R}
 library(patchwork)
