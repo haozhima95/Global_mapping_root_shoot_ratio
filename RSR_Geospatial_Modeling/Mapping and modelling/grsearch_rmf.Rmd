@@ -8,6 +8,12 @@ output: html_document
 
 This script is used for an offline grid search to find the best models that could fit forest training dataset. Thus we could find the best fit hyperparameters that we can use for mapping.
 
+The aim of doing grid search is to try the best avoiding overfitting, which most critics on machine learning have focused on. Higher R2 here, computed as coefficient of determining variation, means lower RMSE. This R2 or RMSE, is commonly used to detect whether the model is good or not in terms of avoiding overfitting.
+
+The R version is 3.5.1 with h2o package 3.32.0.1 and data.table package 1.12.8. Before running this script, make sure you have equal or higher than thses versions for your R and packages. 
+
+If the dataset's directory is set, just use ctrl+alt+R to run all the chunks from the begining till the end. You can both have the model performance and a scatter plot. Also, this script outputs the best ten models that will be used in mapping approach and their performace. To compute the ensemble approach performace, a R2 is also calculated. 
+
 
 Load the package
 ```{R}
@@ -19,10 +25,10 @@ library(foreach)
 library(doParallel)
 library(tidyverse)
 ```
-Load the dataset. Here I put forest as an example. Same procedure can be replaced by grassland or shrubland datset. 
+Load the dataset. Here I put forest dataset as an example. Same procedure can be replaced by grassland or shrubland datset. 
 
 ```{R}
-forest.rsr.grsearch<-read.csv('Forest training dataset')
+forest.rsr.grsearch<-read.csv('Forest training dataset.csv')
 
 ```
 
@@ -33,13 +39,7 @@ median(forest.rsr.grsearch$ratio)
 mad(forest.rsr.grsearch$ratio)
 mean(forest.rsr.grsearch$ratio)
 ```
-```{R}
-library(ggplot2)
-ggplot(forest.rsr.grsearch, aes(soil_moisture))+
-  geom_histogram()
-mean(forest.rsr.grsearch$soil_moisture)
-max(forest.rsr.grsearch$soil_moisture)
-```
+
 
 Select bands.
 
@@ -79,6 +79,8 @@ localH2O<-h2o.init(nthreads = 7, max_mem_size = '10g', ignore_config = TRUE)
 import the regression matrix
 ```{R}
 regmatrixh2o<-as.h2o(regressionmatrix, destination_frame = 'regMatrixH2O')
+
+## Important, without this matrix, you can hardly run grid search.
 ```
 
 
@@ -88,6 +90,7 @@ set grsearch parameters
 rf.params<-list(ntrees = c(50,100,150),
                 mtries = c(2:10),
                 min_rows = c(2:5)
+                #### I would recommend higher ntrees if you would like to have a hihger model performance. For example, ntree = 500. Normally, the higher the value of these parameters, the higher the possible model performance. Do compromise with your computer capacity. 
                 )
 
 ```
@@ -217,13 +220,13 @@ coef_det <- function(xtrue, xpred){
 }
 
 ```
-Get the R sqaure. Note here is R sqaure is the comparison of the pairs of empirical rmf and predictions with the curve line "y = x" 
+Get the R sqaure. Note here is R sqaure is the comparison of the pairs of empirical rmf and predictions with the curve line "y = x". Here is the measurement of the ensemble approach performance. 
 ```{R}
 coef_det(cvprediction$`regressionmatrix$rmf`,cvprediction$predictmean)
 
 ```
 
-
+Shut down h2o to release your memory. Good for your computer. 
 ```{R}
 h2o.shutdown(prompt = FALSE)
 
@@ -239,9 +242,11 @@ colors <-  colorRampPalette(paletteForUse)(256)
 cvprediction$dens <- col2rgb(densCols(cvprediction$`regressionmatrix$rmf`, cvprediction$predictmean))[1,] + 1L
 cvprediction$colors = colors[cvprediction$dens]
 
-#summary(lm(predict ~ train, data = trainandpredicted))
+
 
 ```
+
+Plotting.
 
 ```{R}
 ggplot(cvprediction, 
